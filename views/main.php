@@ -47,19 +47,22 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
 
         // array of meta boxes + used to register dashboard widgets (id, title, callback, context, priority, callback arguments (array), dashboard widget (boolean) )   
         $this->meta_boxes_array = array(
-            // array( id, title, callback (usually parent, approach created by Ryan Bayne), context (position), priority, call back arguments array, add to dashboard (boolean), required capability
             array( 'main-welcome', __( 'WebTechGlobal Global Plugins', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'welcome' ), true, 'activate_plugins' ),
+            
+            // package specific settings and tools
             array( 'main-createportal', __( 'Create Portal', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'createportal' ), true, 'activate_plugins' ),
             array( 'main-portalslist', __( 'Portals List', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'portalslist' ), true, 'activate_plugins' ),
             array( 'main-currentportal', __( 'Current Portal Selection', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'currentportal' ), true, 'activate_plugins' ),
             array( 'main-createsidebar', __( 'Create Sidebar', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'createsidebar' ), true, 'activate_plugins' ),
             array( 'main-sidebarlist', __( 'Sidebar List', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'sidebarlist' ), true, 'activate_plugins' ),
-                   
+            
+            // WTG core settings       
             array( 'main-globalswitches', __( 'Global Switches', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'globalswitches' ), true, 'activate_plugins' ),
             array( 'main-logsettings', __( 'Log Settings', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'logsettings' ), true, 'activate_plugins' ),
             array( 'main-pagecapabilitysettings', __( 'Page Capability Settings', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'pagecapabilitysettings' ), true, 'activate_plugins' ),
+            array( 'main-setupdefaulttwitter', __( 'Twitter API', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'setupdefaulttwitter' ), true, 'activate_plugins' ),          
             
-            // side boxes
+            // information and social
             array( 'main-twitterupdates', __( 'Twitter', 'wtgportalmanager' ), array( $this, 'parent' ), 'side','default',array( 'formid' => 'twitterupdates' ), true, 'activate_plugins' ),
             array( 'main-facebook', __( 'Facebook', 'wtgportalmanager' ), array( $this, 'parent' ), 'side','default',array( 'formid' => 'facebook' ), true, 'activate_plugins' ),
             array( 'main-support', __( 'Support', 'wtgportalmanager' ), array( $this, 'parent' ), 'side','default',array( 'formid' => 'support' ), true, 'activate_plugins' ),            
@@ -822,13 +825,13 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
         $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], __( 'Create a new portal. It will become active in the admin straight away so that you may begin building it. The portal is technically live once you publish the home page but it will need a menu.', 'wtgportalmanager' ), false );        
         $this->Forms->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );
         
-        global $tasksmanager_settings;
+        global $wtgportalmanager_settings;
         ?>  
 
             <table class="form-table">
             <?php        
-            $this->Forms->text_advanced( $box['args']['formid'], 'newportalname', 'newportalname', __( 'Sidebar Name', 'wtgportalmanager' ), '', false, true, true, false, false, array( 'alphanumeric' ) );      
-            $this->Forms->textarea_basic( $box['args']['formid'], 'newportaldescription', 'newportaldescription', __( 'Sidebar Description', 'wtgportalmanager' ), '', true, 5, 20, array( 'alphanumeric' ) );
+            $this->Forms->text_advanced( $box['args']['formid'], 'newportalname', 'newportalname', __( 'Portal Name', 'wtgportalmanager' ), '', false, true, true, false, false, array( 'alphanumeric' ) );      
+            $this->Forms->textarea_basic( $box['args']['formid'], 'newportaldescription', 'newportaldescription', __( 'Portal Description', 'wtgportalmanager' ), '', true, 5, 20, array( 'alphanumeric' ) );
             
             // get users menus
             $menu_terms_array = get_terms( 'nav_menu', array( 'hide_empty' => false ) ); 
@@ -839,7 +842,19 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
                 $menus[ $term->term_id ] = $term->name;
             }
                         
-            $this->Forms->input( $box['args']['formid'], 'menu', 'selectedmenu', 'selectedmenu', __( 'Portal Menu', 'wtgportalmanager' ), 'Select Registered Menu', true, '', array( 'itemsarray' => $menus, 'defaultvalue' => 'notselected123', 'defaultitem_name' => __( 'Menu Not Selected', 'wtgportalmanager' ) ) );        
+            $this->Forms->input( $box['args']['formid'], 'menu', 'selectedmenu', 'selectedmenu', __( 'Main Menu', 'wtgportalmanager' ), 'Select Registered Menu', true, '', array( 'itemsarray' => $menus, 'defaultvalue' => 'notselected123', 'defaultitem_name' => __( 'Menu Not Selected', 'wtgportalmanager' ) ) );        
+            
+            // main pages (it's not all about the portal menu, integration with other plugins on a per page basis is the focus)
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalmainpageid', 'newportalmainpageid', __( 'Main Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalupdatespage', 'newportalupdatespageid', __( 'Updates Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalblogcategory', 'newportalblogcategory', __( 'Blog Category ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalfaqpage', 'newportalfaqpage', __( 'FAQ Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalfeaturespage', 'newportalfeaturespage', __( 'Features Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalforumid', 'newportalforumid', __( 'Forum ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalsupportpage', 'newportalsupportpage', __( 'Support Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalscreenshotspage', 'newportalscreenshotspage', __( 'Screenshots Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalvideospage', 'newportalvideospage', __( 'Videos Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->text_basic( $box['args']['formid'], 'newportaltestimonialspage', 'newportaltestimonialspage', __( 'Testimonials Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
             ?>
             </table> 
             
@@ -859,7 +874,7 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
         $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], __( 'Basic list of portals, this will be improved.', 'wtgportalmanager' ), false );        
         $this->Forms->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );
         
-        global $tasksmanager_settings;
+        global $wtgportalmanager_settings;
         ?>  
 
             <table class="form-table">
@@ -872,7 +887,7 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
             </table> 
             
         <?php 
-        $this->UI->postbox_content_footer();
+        //$this->UI->postbox_content_footer();
     }
     
     /**
@@ -927,7 +942,6 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
         $this->UI->postbox_content_footer();
     }
 
-    
     /**
     * Displays the current active portal (one that can be edited on the plugins other pages) and
     * has menu for activating another portal.
@@ -951,7 +965,7 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
         $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], $message, false );        
         $this->Forms->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );
         
-        global $tasksmanager_settings;
+        global $wtgportalmanager_settings;
         ?>  
         
             <table class="form-table">
@@ -972,5 +986,54 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
         <?php 
         $this->UI->postbox_content_footer( 'Activate Selected Portal' );
     }    
-    
+
+    /**
+    * Activate/disable and monitor API. 
+    * 
+    * @author Ryan Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function postbox_main_setupdefaulttwitter( $data, $box ) { 
+        $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], __( 'Activate API is required but the fields for a default set of app keys and tokens are not. You may enter an app account on a per portal basis.', 'wtgportalmanager' ), false );        
+        $this->Forms->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );
+
+        global $wtgportalmanager_settings;
+        ?>  
+
+            <table class="form-table">
+            
+            <?php 
+            $current_twitter = null;
+            if( isset( $wtgportalmanager_settings['api']['twitter']['active'] ) ){ $current_twitter = $wtgportalmanager_settings['api']['twitter']['active']; }
+            $this->Forms->switch_basic( $box['args']['formid'], 'twitterapiswitch', 'twitterapiswitch', __( 'Twitter API Switch', 'wtgportalmanager' ), 'disabled', $current_twitter, false ); 
+            ?>
+                                          
+            <?php 
+            $twitter_consumer_key = '';
+            if( isset( $wtgportalmanager_settings['api']['twitter']['apps']['default']['consumer_key'] ) ) { $twitter_consumer_key = $wtgportalmanager_settings['api']['twitter']['apps']['default']['consumer_key']; }
+            $this->Forms->text_basic( $box['args']['formid'], 'consumer_key', 'consumer_key', 'Consumer Key (API Key)', $twitter_consumer_key, true, array( 'alphanumeric' ) );
+            
+            $twitter_consumer_secret = '';
+            if( isset( $wtgportalmanager_settings['api']['twitter']['apps']['default']['consumer_secret'] ) ) { $twitter_consumer_secret = $wtgportalmanager_settings['api']['twitter']['apps']['default']['consumer_secret']; }            
+            $this->Forms->text_basic( $box['args']['formid'], 'consumer_secret', 'consumer_secret', 'Consumer Secret (API Secret)', $twitter_consumer_secret, true, array( 'alphanumeric' ) );
+            
+            $twitter_access_token = '';
+            if( isset( $wtgportalmanager_settings['api']['twitter']['apps']['default']['access_token'] ) ) { $twitter_access_token = $wtgportalmanager_settings['api']['twitter']['apps']['default']['access_token']; }            
+            $this->Forms->text_basic( $box['args']['formid'], 'access_token', 'access_token', 'Your Access Token', $twitter_access_token, true, array( 'alphanumeric' ) );
+            
+            $twitter_token_secret = '';
+            if( isset( $wtgportalmanager_settings['api']['twitter']['apps']['default']['token_secret'] ) ) { $twitter_token_secret = $wtgportalmanager_settings['api']['twitter']['apps']['default']['token_secret']; }            
+            $this->Forms->text_basic( $box['args']['formid'], 'access_token_secret', 'access_token_secret', 'Access Token Secret', $twitter_token_secret, true, array( 'alphanumeric' ) );
+            
+            $twitter_screenname = '';
+            if( isset( $wtgportalmanager_settings['api']['twitter']['apps']['default']['screenname'] ) ) { $twitter_screenname = $wtgportalmanager_settings['api']['twitter']['apps']['default']['screenname']; }            
+            $this->Forms->text_basic( $box['args']['formid'], 'screenname', 'screenname', 'Twitter Feed Screen Name', $twitter_screenname, false, array( 'alphanumeric' ) );
+            ?>
+
+            </table>
+        <?php 
+        $this->UI->postbox_content_footer( 'Update API Status' );
+    }     
 }?>

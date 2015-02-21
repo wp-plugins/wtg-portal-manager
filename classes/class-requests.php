@@ -41,7 +41,11 @@ class WTGPORTALMANAGER_Requests {
         $this->Files = $this->WTGPORTALMANAGER->load_class( 'WTGPORTALMANAGER_Files', 'class-files.php', 'classes' );
         $this->Forms = $this->WTGPORTALMANAGER->load_class( 'WTGPORTALMANAGER_Formbuilder', 'class-forms.php', 'classes' );
         $this->WPCore = $this->WTGPORTALMANAGER->load_class( 'WTGPORTALMANAGER_WPCore', 'class-wpcore.php', 'classes' );
-        $this->TabMenu = $this->WTGPORTALMANAGER->load_class( "WTGPORTALMANAGER_TabMenu", "class-pluginmenu.php", 'classes','pluginmenu' );    
+        $this->TabMenu = $this->WTGPORTALMANAGER->load_class( "WTGPORTALMANAGER_TabMenu", "class-pluginmenu.php", 'classes','pluginmenu' );   
+        
+        // set current active portal
+        if(!defined( "WTGPORTALMANAGER_CURRENT" ) ){define( "WTGPORTALMANAGER_CURRENT", $this->WTGPORTALMANAGER->get_active_portal_id() );}
+                         
     }
     
     /**
@@ -501,7 +505,23 @@ class WTGPORTALMANAGER_Requests {
     * @version 1.0
     */
     public function createportal() {
-        $portal_id = $this->WTGPORTALMANAGER->insertportal( $_POST['newportalname'], $_POST['newportaldescription'], $_POST['selectedmenu'] );  
+
+  
+        // build optional fields array (pages, blog category, forum ID etc)
+        $optional_fields = array();
+        $optional_fields['newportalmainpageid'] = $_POST['newportalmainpageid'];
+        $optional_fields['newportalupdatespageid'] = $_POST['newportalupdatespageid'];
+        $optional_fields['newportalblogcategory'] = $_POST['newportalblogcategory'];
+        $optional_fields['newportalfaqpage'] = $_POST['newportalfaqpage'];
+        $optional_fields['newportalfeaturespage'] = $_POST['newportalfeaturespage'];
+        $optional_fields['newportalforumid'] = $_POST['newportalforumid'];
+        $optional_fields['newportalsupportpage'] = $_POST['newportalsupportpage'];
+        $optional_fields['newportalscreenshotspage'] = $_POST['newportalscreenshotspage'];
+        $optional_fields['newportalvideospage'] = $_POST['newportalvideospage'];
+        $optional_fields['newportaltestimonialspage'] = $_POST['newportaltestimonialspage'];
+        
+        // insert the portal
+        $portal_id = $this->WTGPORTALMANAGER->insertportal( $_POST['newportalname'], $_POST['newportaldescription'], $_POST['selectedmenu'], $optional_fields );  
 
         // set the new portal to active (applies to current user only)
         $this->WTGPORTALMANAGER->activate_portal( get_current_user_id(), $portal_id );
@@ -660,5 +680,49 @@ class WTGPORTALMANAGER_Requests {
         $this->UI->create_notice( __( "Your current portals sidebars have been set. This change is applied instantly. Please view your portal as a none registered viewer to test.", 'wtgportalmanager' ), 'success', 'Small', __( 'Main Sidebar Set', 'wtgportalmanager' ) );        
     }
     
+    /**
+    * Activates or disables API's 
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function setupdefaulttwitter() {
+        global $wtgportalmanager_settings;
+         
+        $wtgportalmanager_settings['api']['twitter']['active'] = $_POST['twitterapiswitch'];
+        //$wtgportalmanager_settings['api']['twitter']['apps']['default'] = $_POST['cache_expire'];
+        
+        $wtgportalmanager_settings['api']['twitter']['apps']['default']['consumer_key'] = $_POST['consumer_key'];
+        $wtgportalmanager_settings['api']['twitter']['apps']['default']['consumer_secret'] = $_POST['consumer_secret'];
+        $wtgportalmanager_settings['api']['twitter']['apps']['default']['access_token'] = $_POST['access_token'];
+        $wtgportalmanager_settings['api']['twitter']['apps']['default']['token_secret'] = $_POST['access_token_secret'];  
+        $wtgportalmanager_settings['api']['twitter']['apps']['default']['screenname'] = $_POST['screenname'];
+                                        
+        $this->WTGPORTALMANAGER->update_settings( $wtgportalmanager_settings );    
+        $this->UI->create_notice( __( "Please check features related to the API you disabled or activated and ensure they are working as normal.", 'wtgportalmanager' ), 'success', 'Small', __( 'API Updated', 'wtgportalmanager' ) );       
+    }
+    
+    /**
+    * Store Twitter API settings for the current portal only.
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function setupportaltwitter() {
+        global $wtgportalmanager_settings;
+        unset($wtgportalmanager_settings['api']['twitter']['apps']);
+        $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_CURRENT]['consumer_key'] = $_POST['consumer_key'];
+        $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_CURRENT]['consumer_secret'] = $_POST['consumer_secret'];
+        $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_CURRENT]['access_token'] = $_POST['access_token'];
+        $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_CURRENT]['token_secret'] = $_POST['access_token_secret'];
+        $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_CURRENT]['screenname'] = $_POST['screenname'];
+  
+        $this->WTGPORTALMANAGER->update_settings( $wtgportalmanager_settings );    
+        $this->UI->create_notice( __( "You have updated the current portals Twitter App account.", 'wtgportalmanager' ), 'success', 'Small', __( 'Portals Twitter Updated', 'wtgportalmanager' ) );       
+    }
 }// WTGPORTALMANAGER_Requests       
 ?>

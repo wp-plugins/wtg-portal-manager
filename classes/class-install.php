@@ -130,7 +130,7 @@ class WTGPORTALMANAGER_Install {
 
         // webtechglobal_portalmeta
         $sql_create_table = "CREATE TABLE {$wpdb->webtechglobal_portalmeta} (meta_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,webtechglobal_portal_id bigint(20) unsigned NOT NULL DEFAULT 0,meta_key varchar(255) DEFAULT NULL,meta_value longtext,PRIMARY KEY (meta_id),KEY webtechglobal_portal_id (webtechglobal_portal_id),KEY meta_key (meta_key) ) $charset_collate; ";
-        dbDelta( $sql_create_table );    
+        dbDelta( $sql_create_table );
     }
                                        
     /**

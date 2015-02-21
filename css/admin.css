@@ -1,4 +1,10 @@
-/* CSS Document for WTG Portal Manager */
+/* 
+* Purpose: adds styles to the secure admin/dashboard of WordPress.
+* Package: WTG Portal Manager 
+* Author: Ryan R. Bayne
+* Contact: webmaster@webtechglobal.co.uk 
+* Version: 0.1
+*/
 
 .wtgportalmanager_forms_div{  
     padding: 10px 10px 10px 10px;

@@ -5,7 +5,7 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Tags: portal, portal manager, product portal, service portal, web portal, web portals
 Requires at least: 3.8.0
-Tested up to: 4.0.0
+Tested up to: 4.1.0
 Stable tag: trunk
 
 WTG Portal Manager assists us in managing related content for a product, service or event. 
@@ -35,9 +35,7 @@ The goal is a time saving tool that applies the same uniformal designs and stand
 
 == Installation ==
 
-1. Method 1: Move folder inside the .zip file into the "wp-content/plugins/" directory if your website is stored locally. Then upload the new plugin folder using your FTP program.
-1. Method 2: Use your hosting control panels file manager to upload the plugin folder (not the .zip, only the folder inside it) to the "wp-content/plugins/" directory.
-1. Method 3: In your WordPress admin click on Plugins then click on Add New. You can search for your plugin there and perform the installation easily. This method does not apply to premium plugins.
+Please install WTG Portal Manager from WordPress.org by going to Plugins --> Add New and searching "WTG Portal Manager". This is safer and quicker than any other methods.
 
 == Frequently Asked Questions ==
 
@@ -82,10 +80,21 @@ Translators needed to help localize WTG Portal Manager.
 
 == Upgrade Notice ==
 
-No special upgrade instructions this time. Just remember to backup your site files and database.
+Please update this plugin using your WordPress Installed Plugins screen. Click on Update Now under this plugins details when an update is ready.
+This method is safer than using any other source for the files.
 
 == Changelog == 
-
+= 0.0.2 =
+* Feature Changes
+    * New optional fields added to Create Portal form that focus on storing information that will help portal manager integration with other plugins on a per page basis.
+    * New API settings form on the plugins dashboard.
+    * New Content area with Updates tab we use for managing an Updates Page in a portal.
+    * New shortcode [portalupdate] which will list updates using multiple sources. Right now Twitter is available with OAuth setup so that each portal can be treated independently. 
+* Technical Information
+    * OAuth package taking from OAuth Twitter Feed for Developers 
+* Known Issues
+    * None
+     
 = 0.0.1 =
 * Beta Released 19th January 2015 - use with care until later versions.
 

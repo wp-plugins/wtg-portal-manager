@@ -10,7 +10,7 @@
  * @author Ryan Bayne   
  * @since 0.0.1
  */
-
+            
 // load in WordPress only
 defined( 'ABSPATH' ) || die( 'No direct script access allowed!' );
 
@@ -77,11 +77,13 @@ class WTGPORTALMANAGER {
             array( 'admin_enqueue_scripts',          'plugin_admin_enqueue_scripts',                           'pluginscreens' ),
             array( 'init',                           'plugin_admin_register_styles',                           'pluginscreens' ),
             array( 'admin_print_styles',             'plugin_admin_print_styles',                              'pluginscreens' ),
+            array( 'wp_enqueue_scripts',             'plugin_enqueue_public_styles',                           'publicpages' ),            
             array( 'admin_notices',                  'admin_notices',                                          'admin_notices' ),
-            array( 'init',                           'init_portal',                                            'all' ),            
-            array( 'widgets_init',                   'register_sidebars',                                      'all' ),                  
+            //array( 'init',                           'init_portal',                                            'all' ),            
+            array( 'init',                           'plugin_shortcodes',                                      'all' ),            
+            array( 'widgets_init',                   'register_sidebars',                                      'all' ),
         ),        
-                              
+                  
         $plugin_filters = array(
             /*
                 Examples - last value are the sections the filter apply to
@@ -90,8 +92,108 @@ class WTGPORTALMANAGER {
                     array( 'admin_footer_text',                     'examplefunction3',                         'monetization' ),
                     
             */
-        );     
+        ),     
+        
+        $plugin_shorcodes = array (
+            array( 'portalupdate',    'portal_updates_shortcode' ),
+        );
+
+    public function __construct() {
+        global $wtgportalmanager_settings;
+
+        self::debugmode(); 
+                  
+        // load class used at all times
+        $this->DB = self::load_class( 'WTGPORTALMANAGER_DB', 'class-wpdb.php', 'classes' );
+        $this->PHP = self::load_class( 'WTGPORTALMANAGER_PHP', 'class-phplibrary.php', 'classes' );
+        $this->Install = self::load_class( 'WTGPORTALMANAGER_Install', 'class-install.php', 'classes' );
+        $this->Files = self::load_class( 'WTGPORTALMANAGER_Files', 'class-files.php', 'classes' );
+  
+        $wtgportalmanager_settings = self::adminsettings();
+  
+        $this->add_actions();
+        $this->add_filters();
+
+        if( is_admin() ){
+        
+            // admin globals 
+            global $c2p_notice_array;
+            
+            $c2p_notice_array = array();// set notice array for storing new notices in (not persistent notices)
+            
+            // load class used from admin only                   
+            $this->UI = self::load_class( 'WTGPORTALMANAGER_UI', 'class-ui.php', 'classes' );
+            $this->Helparray = self::load_class( 'WTGPORTALMANAGER_Help', 'class-help.php', 'classes' );
+            $this->Tabmenu = self::load_class( "WTGPORTALMANAGER_TabMenu", "class-pluginmenu.php", 'classes','pluginmenu' );    
+        }            
+    }
+ 
+    /**
+    * Registers shortcodes. 
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function plugin_shortcodes() { 
+        foreach( $this->plugin_shorcodes as $shortcode )
+        {
+            add_shortcode( $shortcode[0], array( $this, $shortcode[1] ) );    
+        }   
+    }
     
+    /**
+    * Outputs latest updates.
+    * 
+    * The plan is to compile a tidy list of updates from multiple sources...
+    * 
+    * Twitter
+    * Facebook
+    * LinkedIn
+    * WordPress.org forum
+    * phpBB and other forums
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    * 
+    * @todo make use of cache settings for each API and create a cache which all API results as that one main cache may be quicker
+    */
+    public function portal_updates_shortcode() {
+        global $wtgportalmanager_settings;
+        
+        // Twitter
+        if( isset( $wtgportalmanager_settings['api']['twitter']['active'] ) )
+        {
+            // we have the ability to pass arguments to this, it is optional
+            $this->TWITTER = self::load_class( "WTGPORTALMANAGER_Twitter", "class-twitter.php", 'classes' );   
+                     
+            $result = $this->TWITTER->startTwitter( false, 5, false, 'default' );// $username = false, $count = 20, $options = false, $application = 'default'         
+        }
+        
+        echo '<div class="portalmanager_update_item">';
+            echo '<ul>';
+                
+                foreach( $result as $key => $item )
+                {         
+                    echo '<li>';
+                    
+                    echo '<img src="' . WTGPORTALMANAGER_IMAGES_URL . '/social/Twitter_bird_logo_100x100.png">';
+                    
+                    echo '<p>' . $item ['created_at'] . '</p>';
+                    echo '<br>';
+                    echo '<p>' . $item ['text'] . '</p>';
+                    
+                    echo '</li>';
+                }
+                 
+            echo '</ul>';
+        echo '</div>';
+                      
+    }
+        
     /**
     * Determines if the content being visited is part of a portal.
     * Then defines WTGPORTALMANAGER_ID for further hookes and filters. 
@@ -243,41 +345,7 @@ class WTGPORTALMANAGER {
             }    
         }
     }
-            
-    /**
-    * This class is being introduced gradually, we will move various lines and config functions from the main file to load here eventually
-    */
-    public function __construct() {
-        global $wtgportalmanager_settings;
-
-        self::debugmode(); 
-                  
-        // load class used at all times
-        $this->DB = self::load_class( 'WTGPORTALMANAGER_DB', 'class-wpdb.php', 'classes' );
-        $this->PHP = self::load_class( 'WTGPORTALMANAGER_PHP', 'class-phplibrary.php', 'classes' );
-        $this->Install = self::load_class( 'WTGPORTALMANAGER_Install', 'class-install.php', 'classes' );
-        $this->Files = self::load_class( 'WTGPORTALMANAGER_Files', 'class-files.php', 'classes' );
-  
-        $wtgportalmanager_settings = self::adminsettings();
-  
-        $this->add_actions();
-        $this->add_filters();
-
-        if( is_admin() ){
-        
-            // admin globals 
-            global $c2p_notice_array;
-            
-            $c2p_notice_array = array();// set notice array for storing new notices in (not persistent notices)
-            
-            // load class used from admin only                   
-            $this->UI = self::load_class( 'WTGPORTALMANAGER_UI', 'class-ui.php', 'classes' );
-            $this->Helparray = self::load_class( 'WTGPORTALMANAGER_Help', 'class-help.php', 'classes' );
-            $this->Tabmenu = self::load_class( "WTGPORTALMANAGER_TabMenu", "class-pluginmenu.php", 'classes','pluginmenu' );    
-        
-        }            
-    }
-    
+                
     /**
     * register admin only .css must be done before printing styles
     * 
@@ -312,11 +380,12 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function plugin_admin_enqueue_scripts() {
+    public function plugin_admin_enqueue_scripts() {    
         wp_enqueue_script( 'wp-pointer' );
         wp_enqueue_style( 'wp-pointer' );          
     }    
-
+ 
+    
     /**
      * Enqueue a CSS file with ability to switch from .min for debug
      *
@@ -349,7 +418,21 @@ class WTGPORTALMANAGER {
         $js_url = plugins_url( $js_file, WTGPORTALMANAGER__FILE__ );
         wp_enqueue_script( "wtgportalmanager-{$name}", $js_url, $dependencies, WTGPORTALMANAGER::version, true );
     }  
-        
+    
+    /**
+    * Register and enqueue CSS for public pages. This method is all that is needed
+    * from within this plugin to applying styling to none admin pages.
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function plugin_enqueue_public_styles() {    
+        wp_register_style( 'wtgportalmanager_css_public',plugins_url( 'wtgportalmanager/css/public.css' ), __FILE__);
+        wp_enqueue_style( 'wtgportalmanager_css_public' );
+    }
+           
     /**
     * Create a new instance of the $class, which is stored in $file in the $folder subfolder
     * of the plugin's directory.
@@ -514,14 +597,10 @@ class WTGPORTALMANAGER {
      * @since 0.0.1
      * @version 1.0
      */
-     public function load_admin_page() {
-        // check if action is a supported action, and whether the user is allowed to access this screen
-        /*
-        if ( ! isset( $this->view_actions[ $action ] ) || ! current_user_can( $this->view_actions[ $action ]['required_cap'] ) ) {
-            wp_die( __( 'You do not have sufficient permissions to access this page.', 'default' ) );
-        }
-        */
-        
+     public function load_admin_page() {        
+        // set current active portal
+        if(!defined( "WTGPORTALMANAGER_CURRENT" ) ){define( "WTGPORTALMANAGER_CURRENT", self::get_active_portal_id() );}
+
         // load tab menu class which contains help content array
         $WTGPORTALMANAGER_TabMenu = self::load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
         
@@ -556,7 +635,7 @@ class WTGPORTALMANAGER {
         foreach( $this->plugin_actions as $actionArray ) {        
             list( $action, $details, $whenToLoad) = $actionArray;
                                    
-            if(!$this->filteraction_should_beloaded( $whenToLoad) ) {      
+            if(!$this->should_filter_or_action_load( $whenToLoad) ) {      
                 continue;
             }
                  
@@ -578,7 +657,7 @@ class WTGPORTALMANAGER {
         foreach( $this->plugin_filters as $filterArray ) {
             list( $filter, $details, $whenToLoad) = $filterArray;
                            
-            if(!$this->filteraction_should_beloaded( $whenToLoad) ) {
+            if(!$this->should_filter_or_action_load( $whenToLoad) ) {
                 continue;
             }
             
@@ -605,24 +684,30 @@ class WTGPORTALMANAGER {
     *  
     * @param mixed $whenToLoad
     */
-    private function filteraction_should_beloaded( $whenToLoad) {
+    private function should_filter_or_action_load( $whenToLoad) {
         $wtgportalmanager_settings = $this->adminsettings();
           
         switch( $whenToLoad) {
             case 'all':    
                 return true;
             break;
-            case 'adminpages':
-                // load when logged into admin and on any admin page
+            case 'adminpages':// load when logged into admin and on any admin page
+            
                 if( is_admin() ){return true;}
                 return false;    
-            break;
-            case 'pluginscreens':
-       
-                // load when on a WTG Portal Manager admin screen
-                if( isset( $_GET['page'] ) && strstr( $_GET['page'], 'wtgportalmanager' ) ){return true;}
                 
+            break;
+            case 'publicpages':// when not on admin pages
+            
+                if( !is_admin() ){return true;}
                 return false;    
+                
+            break;
+            case 'pluginscreens':// load when on a WTG Portal Manager admin screen
+            
+                if( isset( $_GET['page'] ) && strstr( $_GET['page'], 'wtgportalmanager' ) ){return true;}
+                return false;    
+                
             break;            
             case 'pluginanddashboard':
 
@@ -637,13 +722,17 @@ class WTGPORTALMANAGER {
                 return false;    
             break;
             case 'projects':
-                return true;    
+            
+                return true;   
+                 
             break;            
             case 'systematicpostupdating':  
+            
                 if(!isset( $wtgportalmanager_settings['standardsettings']['systematicpostupdating'] ) || $wtgportalmanager_settings['standardsettings']['systematicpostupdating'] != 'enabled' ){
                     return false;    
                 }      
                 return true;
+                
             break;
             case 'admin_notices':                         
 
@@ -758,13 +847,20 @@ class WTGPORTALMANAGER {
     * @param mixed $autoload used by add_option only
     */
     public function option( $option, $action, $value = 'No Value', $autoload = 'yes' ){
-        if( $action == 'add' ){  
+        if( $action == 'add' )
+        {  
             return add_option( $option, $value, '', $autoload );            
-        }elseif( $action == 'get' ){
+        }
+        elseif( $action == 'get' )
+        {
             return get_option( $option);    
-        }elseif( $action == 'update' ){        
+        }
+        elseif( $action == 'update' )
+        {        
             return update_option( $option, $value );
-        }elseif( $action == 'delete' ){
+        }
+        elseif( $action == 'delete' )
+        {
             return delete_option( $option);        
         }
     }
@@ -1022,7 +1118,7 @@ class WTGPORTALMANAGER {
     * @version 1.2.8
     */
     public function admin_menu() {    
-        global $c2p_currentversion, $c2pm, $tasksmanager_settings;
+        global $c2p_currentversion, $c2pm, $wtgportalmanager_settings;
          
         $WTGPORTALMANAGER_TabMenu = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
         $WTGPORTALMANAGER_Menu = $WTGPORTALMANAGER_TabMenu->menu_array();
@@ -1217,7 +1313,7 @@ class WTGPORTALMANAGER {
     /**
     * Used to display this plugins notices on none plugin pages i.e. dashboard.
     * 
-    * filteraction_should_beloaded() decides if the admin_notices hook is called, which hooks this function.
+    * should_filter_or_action_load() decides if the admin_notices hook is called, which hooks this function.
     * I think that check should only check which page is being viewed. Anything more advanced might need to
     * be performed in display_users_notices().
     * 
@@ -2894,18 +2990,50 @@ class WTGPORTALMANAGER {
     * @package WTG Portal Manager
     * @since 0.0.1
     * @version 1.0
+    * 
+    * @returns boolean false if insert() does not return numeric value (ID)
     */
-    public function insertportal( $portal_name, $portal_description, $portal_menu_id ) {
+    public function insertportal( $portal_name, $portal_description, $portal_menu_id, $opt = array() ) {
         global $wpdb;
         $new_portal_id = $this->DB->insert( $wpdb->webtechglobal_portals, array( 'portalname' => $portal_name ) );   
-        
-        // if invalid ID return whatever insert query returned
-        if( is_numeric( $new_portal_id ) ) {
+        if( !is_numeric( $new_portal_id ) ) {
+            return false;    
+        }
 
-            // we have a new portal id - insert portal meta
-            $this->add_portal_meta( $new_portal_id, 'description', $portal_description, true );
-            $this->add_portal_meta( $new_portal_id, 'mainmenu', $portal_menu_id, true );
-                             
+        // we have a new portal id - insert portal meta
+        $this->add_portal_meta( $new_portal_id, 'description', $portal_description, true );
+        $this->add_portal_meta( $new_portal_id, 'mainmenu', $portal_menu_id, true );
+                         
+        // add optional fields
+        if( isset( $opt['newportalmainpageid'] ) ){
+            $this->add_portal_meta( $new_portal_id, 'page', $opt['newportalmainpageid'], true );    
+        }
+        if( isset( $opt['newportalupdatespageid'] ) ){
+            $this->add_portal_meta( $new_portal_id, 'primary_updates_page', $opt['newportalupdatespageid'], true );    
+        }
+        if( isset( $opt['newportalblogcategory'] ) ){
+            $this->add_portal_meta( $new_portal_id, 'maincategory', $opt['newportalblogcategory'], true );    
+        }
+        if( isset( $opt['newportalfaqpage'] ) ){
+            $this->add_portal_meta( $new_portal_id, 'primary_faq_page', $opt['newportalfaqpage'], true );    
+        }
+        if( isset( $opt['newportalfeaturespage'] ) ){
+            $this->add_portal_meta( $new_portal_id, 'primary_features_page', $opt['newportalfeaturespage'], true );    
+        }
+        if( isset( $opt['newportalforumid'] ) ){
+            $this->add_portal_meta( $new_portal_id, 'primary_forum_id', $opt['newportalforumid'], true );    
+        }
+        if( isset( $opt['newportalsupportpage'] ) ){
+            $this->add_portal_meta( $new_portal_id, 'primary_support_page', $opt['newportalsupportpage'], true );    
+        }
+        if( isset( $opt['newportalscreenshotspage'] ) ){
+            $this->add_portal_meta( $new_portal_id, 'primary_screenshot_page', $opt['newportalscreenshotspage'], true );    
+        }
+        if( isset( $opt['newportalvideospage'] ) ){
+            $this->add_portal_meta( $new_portal_id, 'primary_video_page', $opt['newportalvideospage'], true );    
+        }
+        if( isset( $opt['newportaltestimonialspage'] ) ){
+            $this->add_portal_meta( $new_portal_id, 'primary_testimonial_page', $opt['newportaltestimonialspage'], true );    
         }
         
         return $new_portal_id;
@@ -3182,8 +3310,7 @@ class WTGPORTALMANAGER {
             }
         } 
         return false; 
-    }
-             
+    }        
 }// end WTGPORTALMANAGER class 
 
 if(!class_exists( 'WP_List_Table' ) ){

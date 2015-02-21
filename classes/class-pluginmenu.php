@@ -85,7 +85,7 @@ class WTGPORTALMANAGER_TabMenu {
         $menu_array['buildsidebar']['tabmenu'] = true;
                 
         /* 
-        // cross content - automatically share excerpts, media, links and comments from a page to anywhere else in the portal
+        // bridge content - automatically share excerpts, media, links and comments from a page to anywhere else in the portal
         $menu_array['buildads']['groupname'] = 'buildsection';
         $menu_array['buildads']['slug'] = 'wtgportalmanager_buildads'; 
         $menu_array['buildads']['menu'] = __( 'Portals Ads', 'wtgportalmanager' );
@@ -107,32 +107,46 @@ class WTGPORTALMANAGER_TabMenu {
         $menu_array['buildads']['parent'] = 'buildpages'; 
         $menu_array['buildads']['tabmenu'] = true;
         */    
-            
-        /*    requires integration with WTG FAQ Manager - individual FAQ management, WTG FAQ Manager will make use of themes short-code for FAQ output 
-        // FAQ
-        $menu_array['buildfaq']['groupname'] = 'buildsection';
+        
+        ######################################################
+        #                                                    #
+        #                      CONTENT                       #
+        #                                                    #
+        ######################################################            
+        // Updates - intended for general updates by web master and developers
+        $menu_array['contentupdates']['groupname'] = 'publishsection';
+        $menu_array['contentupdates']['slug'] = 'wtgportalmanager_contentupdates'; 
+        $menu_array['contentupdates']['menu'] = __( 'Content', 'wtgportalmanager' );
+        $menu_array['contentupdates']['pluginmenu'] = __( 'Updates', 'wtgportalmanager' );
+        $menu_array['contentupdates']['name'] = "contentupdates";
+        $menu_array['contentupdates']['title'] = __( 'Updates', 'wtgportalmanager' ); 
+        $menu_array['contentupdates']['parent'] = 'parent'; 
+        $menu_array['contentupdates']['tabmenu'] = true;
+                
+        // FAQ - basic FAQ manager with option of integration with WTG Question and Answers for a more advanced system that leads to an automatically managed list of FAQ.
+        /*
+        $menu_array['buildfaq']['groupname'] = 'publishsection';
         $menu_array['buildfaq']['slug'] = 'wtgportalmanager_buildfaq'; 
         $menu_array['buildfaq']['menu'] = __( 'Portal FAQ', 'wtgportalmanager' );
         $menu_array['buildfaq']['pluginmenu'] = __( 'Portal FAQ', 'wtgportalmanager' );
         $menu_array['buildfaq']['name'] = "buildfaq";
         $menu_array['buildfaq']['title'] = __( 'Portal FAQ', 'wtgportalmanager' ); 
-        $menu_array['buildfaq']['parent'] = 'buildpages'; 
+        $menu_array['buildfaq']['parent'] = 'contentupdates'; 
         $menu_array['buildfaq']['tabmenu'] = true;
-        
         */            
         
         /*    optional integration with WTG Tasks Manager which has history functionality for building a changes list
                 OR provide setting to manually type changes list
                     OR another setting to use short-code in a selected page and manage changes individally in this plugin
                      
-        // Changes
-        $menu_array['buildchanges']['groupname'] = 'buildsection';
+        // Software Changes - should only be displayed in a portal with type Digital Download or Software
+        $menu_array['buildchanges']['groupname'] = 'publishsection';
         $menu_array['buildchanges']['slug'] = 'wtgportalmanager_buildchanges'; 
         $menu_array['buildchanges']['menu'] = __( 'Development Log', 'wtgportalmanager' );
         $menu_array['buildchanges']['pluginmenu'] = __( 'Development Log', 'wtgportalmanager' );
         $menu_array['buildchanges']['name'] = "buildchanges";
         $menu_array['buildchanges']['title'] = __( 'Development Log', 'wtgportalmanager' ); 
-        $menu_array['buildchanges']['parent'] = 'buildpages'; 
+        $menu_array['buildchanges']['parent'] = 'contentupdates'; 
         $menu_array['buildchanges']['tabmenu'] = true;
         */
                   
@@ -140,13 +154,13 @@ class WTGPORTALMANAGER_TabMenu {
             this will be an automatic log however this page will allow log adding, deleting and editing
                      
         // Portal Log
-        $menu_array['buildlog']['groupname'] = 'buildsection';
+        $menu_array['buildlog']['groupname'] = 'publishsection';
         $menu_array['buildlog']['slug'] = 'wtgportalmanager_buildchanges'; 
         $menu_array['buildlog']['menu'] = __( 'Development Log', 'wtgportalmanager' );
         $menu_array['buildlog']['pluginmenu'] = __( 'Development Log', 'wtgportalmanager' );
         $menu_array['buildlog']['name'] = "buildchanges";
         $menu_array['buildlog']['title'] = __( 'Development Log', 'wtgportalmanager' ); 
-        $menu_array['buildlog']['parent'] = 'buildpages'; 
+        $menu_array['buildlog']['parent'] = 'contentupdates'; 
         $menu_array['buildlog']['tabmenu'] = true;
         */
           

@@ -1008,18 +1008,20 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
     * @version 1.0
     */
     public function input_switch(){
-        
+        // establish the default
         if( !isset( $this->defaultvalue ) ) {
             $defaultvalue = 'disabled';
-        } elseif( $this->defaultvalue != 'enabled' && $this->defaultvalue != 'disabled' ){
+        } elseif( $this->defaultvalue !== 'enabled' && $this->defaultvalue !== 'disabled' ){
             $defaultvalue = 'disabled';
         }
              
-        // only enabled and disabled is allowed for the switch, do not change this, create a new method for a different approach
-        if( isset( $this->currentvalue ) ) {
+        // if current value not valid then apply default to the currentvalue variable
+        if( isset( $this->currentvalue )  ) {
             if( $this->currentvalue != 'enabled' && $this->currentvalue != 'disabled' ){
                 $this->currentvalue = $this->defaultvalue;
             }    
+        } else {
+            $this->currentvalue = $this->defaultvalue;    
         }
         
         // set disabled state

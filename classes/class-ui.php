@@ -185,6 +185,9 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
     public function status_box( $title, $intro, $progress_array = array() ){
         global $wtgportalmanager_settings;
         
+        // do not display on plugin dashboard
+        if( isset( $_GET['page'] ) && $_GET['page'] === 'wtgportalmanager' ) { return; }
+        
         // set defaults for key portal details
         $portal_name = __( 'No Portals Activated', 'wtgportalmanager' );
         $portal_description = __( 'No portal description could be found.', 'wtgportalmanager' );
@@ -210,7 +213,7 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
 
                 <div class="welcome-panel-content">
 
-                    <h3>Active Portal: ' . $portal_name . '</h3>
+                    <h3>You are working on: ' . $portal_name . '</h3>
  
                     '. self::info_area( '', $portal_description ) .'
                     
