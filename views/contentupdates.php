@@ -55,7 +55,9 @@ class WTGPORTALMANAGER_Contentupdates_View extends WTGPORTALMANAGER_View {
         return $this->meta_boxes_array = array(
             // array( id, title, callback (usually parent, approach created by Ryan Bayne), context (position), priority, call back arguments array, add to dashboard (boolean), required capability
             array( $this->view_name . '-setupportaltwitter', __( 'Portals Twitter', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal', 'default', array( 'formid' => 'setupportaltwitter' ), true, 'activate_plugins' ),
-            array( $this->view_name . '-setupupdates', __( 'Setup Updates Page', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal', 'default', array( 'formid' => 'setupupdates' ), true, 'activate_plugins' ),
+            
+            // side
+            array( $this->view_name . '-setupupdates', __( 'Setup Updates Page', 'wtgportalmanager' ), array( $this, 'parent' ), 'side', 'default', array( 'formid' => 'setupupdates' ), true, 'activate_plugins' ),
         );    
     }
     

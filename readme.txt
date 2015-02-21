@@ -84,6 +84,15 @@ Please update this plugin using your WordPress Installed Plugins screen. Click o
 This method is safer than using any other source for the files.
 
 == Changelog == 
+
+= 0.0.3 =
+* Feature Changes    
+    * None
+* Technical Information
+    * Update procedure changed - version 0.0.2 was bugged when an update was required.
+* Known Issues
+    * None
+    
 = 0.0.2 =
 * Feature Changes
     * New optional fields added to Create Portal form that focus on storing information that will help portal manager integration with other plugins on a per page basis.

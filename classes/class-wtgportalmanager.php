@@ -1126,138 +1126,75 @@ class WTGPORTALMANAGER {
         // set the callback, we can change this during the loop and call methods more dynamically
         // this approach allows us to call the same function for all pages
         $subpage_callback = array( $this, 'show_admin_page' );
-                
-        // get installed version for comparing database and data setup to requirements in new package
-        $installed_version = self::get_installed_version();                
-   
-        // step by step installation NOT CURRENTLY IN USE
-        $is_installed = self::is_installed(); 
-        $is_installed = true;
-                    
-        // check if installation page should be displayed: Install or Update
-        if(!$is_installed && !isset( $_POST['wtgportalmanager_plugin_install_now'] ) ){   
-           
-            // if URL user is attempting to visit any screen other than page=wtgportalmanager then redirect to it
-            if( isset( $_GET['page'] ) && strstr( $_GET['page'], 'wtgportalmanager_' ) ){
-                wp_redirect( get_bloginfo( 'url' ) . '/wp-admin/admin.php?page=wtgportalmanager' );           
-                exit;    
-            }
-            
-            // if plugin not installed
-            $this->page_hooks[] = add_menu_page( __( 'Install' ), 
-            __( 'Install WTG Portal Manager' ), 
-            'administrator', 
-            'wtgportalmanager', 
-            $subpage_callback );
-            
-            
-       /* 
-        $hook = add_menu_page('My Plugin List Table', 'My List Table Example', 'activate_plugins', 'my_list_test', 'wtgportalmanager_alltasks');
-        add_action( "load-$hook", 'add_options' );
 
-        function add_options() {
-          $option = 'per_page';
-          $args = array(
-                 'label' => 'Books',
-                 'default' => 10,
-                 'option' => 'books_per_page'
-                 );
-          add_screen_option( $option, $args );
-        }
-         */   
-            
-        }elseif( isset( $c2p_currentversion) 
-        && isset( $installed_version) 
-        && $installed_version != false
-        && $c2p_currentversion > $installed_version){
-            
-            // if URL user is attempting to visit any screen other than page=wtgportalmanager then redirect to it
-            if( isset( $_GET['page'] ) && strstr( $_GET['page'], 'wtgportalmanager_' && $_GET['page'] !== 'wtgportalmanager_pluginupdate' ) ){
-                wp_redirect( get_bloginfo( 'url' ) . '/wp-admin/admin.php?page=wtgportalmanager_pluginupdate' );
-                exit;    
-            }
-                    
-            // if $installed_version = false it indicates no installation so we should not be displaying an update screen
-            // update screen will be displayed after installation submission if this is not in place
-            
-            // add menu
-            $this->page_hooks[] = add_menu_page( __( 'Update' ), 
-            __( 'Tasks Manager Update Ready' ), 
-            'administrator', 
-            'wtgportalmanager_pluginupdate',  
-            $subpage_callback );
-            
-        }else{
-                
-            // add menu
-            $this->page_hooks[] = add_menu_page( $WTGPORTALMANAGER_Menu['main']['title'], 
-            __( 'WTG Portal Manager', 'wtgportalmanager' ), 
-            'administrator', 
-            'wtgportalmanager',  
-            $subpage_callback ); 
-            
-            // help tab                                                 
-            add_action( 'load-toplevel_page_wtgportalmanager', array( $this, 'help_tab' ) );
-   
-            // track which group has already been displayed using the parent name
-            $groups = array();
-            
-            // remove arrayinfo from the menu array
-            unset( $WTGPORTALMANAGER_Menu['arrayinfo'] );
-            
-            // get all group menu titles
-            $group_titles_array = array();
-            foreach( $WTGPORTALMANAGER_Menu as $key_pagename => $page_array ){ 
-                if( $page_array['parent'] === 'parent' ){                
-                    $group_titles_array[ $page_array['groupname'] ]['grouptitle'] = $page_array['menu'];
-                }
-            }          
-            
-            // loop through sub-pages - remove pages that are not to be registered
-            foreach( $WTGPORTALMANAGER_Menu as $key_pagename => $page_array ){                 
+        // add menu
+        $this->page_hooks[] = add_menu_page( $WTGPORTALMANAGER_Menu['main']['title'], 
+        __( 'WTG Portal Manager', 'wtgportalmanager' ), 
+        'administrator', 
+        'wtgportalmanager',  
+        $subpage_callback ); 
+        
+        // help tab                                                 
+        add_action( 'load-toplevel_page_wtgportalmanager', array( $this, 'help_tab' ) );
 
-                // if not visiting this plugins pages, simply register all the parents
-                if( !isset( $_GET['page'] ) || !strstr( $_GET['page'], 'wtgportalmanager' ) ){
-                    
-                    // remove none parents
-                    if( $page_array['parent'] !== 'parent' ){    
-                        unset( $WTGPORTALMANAGER_Menu[ $key_pagename ] ); 
-                    }        
+        // track which group has already been displayed using the parent name
+        $groups = array();
+        
+        // remove arrayinfo from the menu array
+        unset( $WTGPORTALMANAGER_Menu['arrayinfo'] );
+        
+        // get all group menu titles
+        $group_titles_array = array();
+        foreach( $WTGPORTALMANAGER_Menu as $key_pagename => $page_array ){ 
+            if( $page_array['parent'] === 'parent' ){                
+                $group_titles_array[ $page_array['groupname'] ]['grouptitle'] = $page_array['menu'];
+            }
+        }          
+        
+        // loop through sub-pages - remove pages that are not to be registered
+        foreach( $WTGPORTALMANAGER_Menu as $key_pagename => $page_array ){                 
+
+            // if not visiting this plugins pages, simply register all the parents
+            if( !isset( $_GET['page'] ) || !strstr( $_GET['page'], 'wtgportalmanager' ) ){
                 
-                }elseif( isset( $_GET['page'] ) && strstr( $_GET['page'], 'wtgportalmanager' ) ){
-                    
-                    // remove pages that are not the main, the current visited or a parent
-                    if( $key_pagename !== 'main' && $page_array['slug'] !== $_GET['page'] && $page_array['parent'] !== 'parent' ){
-                        unset( $WTGPORTALMANAGER_Menu[ $key_pagename ] );
-                    }     
-                    
-                } 
+                // remove none parents
+                if( $page_array['parent'] !== 'parent' ){    
+                    unset( $WTGPORTALMANAGER_Menu[ $key_pagename ] ); 
+                }        
+            
+            }elseif( isset( $_GET['page'] ) && strstr( $_GET['page'], 'wtgportalmanager' ) ){
                 
-                // remove the parent of a group for the visited page
-                if( isset( $_GET['page'] ) && $page_array['slug'] === $_GET['page'] ){
-                    unset( $WTGPORTALMANAGER_Menu[ $WTGPORTALMANAGER_Menu[ $key_pagename ]['parent'] ] );
-                }
-                
-                // remove update page as it is only meant to show when new version of files applied
-                if( $page_array['slug'] == 'wtgportalmanager_pluginupdate' ) {
+                // remove pages that are not the main, the current visited or a parent
+                if( $key_pagename !== 'main' && $page_array['slug'] !== $_GET['page'] && $page_array['parent'] !== 'parent' ){
                     unset( $WTGPORTALMANAGER_Menu[ $key_pagename ] );
-                }
+                }     
+                
+            } 
+            
+            // remove the parent of a group for the visited page
+            if( isset( $_GET['page'] ) && $page_array['slug'] === $_GET['page'] ){
+                unset( $WTGPORTALMANAGER_Menu[ $WTGPORTALMANAGER_Menu[ $key_pagename ]['parent'] ] );
             }
-                     
-            foreach( $WTGPORTALMANAGER_Menu as $key_pagename => $page_array ){ 
-                                    
-                $new_hook = add_submenu_page( 'wtgportalmanager', 
-                       $group_titles_array[ $page_array['groupname'] ]['grouptitle'], 
-                       $group_titles_array[ $page_array['groupname'] ]['grouptitle'], 
-                       self::get_page_capability( $key_pagename ), 
-                       $WTGPORTALMANAGER_Menu[ $key_pagename ]['slug'], 
-                       $subpage_callback );     
-             
-                $this->page_hooks[] = $new_hook;
-                       
-                // help tab                                                 
-                add_action( 'load-wtgportalmanager_page_wtgportalmanager_' . $key_pagename, array( $this, 'help_tab' ) );              
+            
+            // remove update page as it is only meant to show when new version of files applied
+            if( $page_array['slug'] == 'wtgportalmanager_pluginupdate' ) {
+                unset( $WTGPORTALMANAGER_Menu[ $key_pagename ] );
             }
+        }
+                 
+        foreach( $WTGPORTALMANAGER_Menu as $key_pagename => $page_array ){ 
+                                
+            $new_hook = add_submenu_page( 'wtgportalmanager', 
+                   $group_titles_array[ $page_array['groupname'] ]['grouptitle'], 
+                   $group_titles_array[ $page_array['groupname'] ]['grouptitle'], 
+                   self::get_page_capability( $key_pagename ), 
+                   $WTGPORTALMANAGER_Menu[ $key_pagename ]['slug'], 
+                   $subpage_callback );     
+         
+            $this->page_hooks[] = $new_hook;
+                   
+            // help tab                                                 
+            add_action( 'load-wtgportalmanager_page_wtgportalmanager_' . $key_pagename, array( $this, 'help_tab' ) );              
         }
     }
     
