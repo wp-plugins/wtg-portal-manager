@@ -85,6 +85,14 @@ This method is safer than using any other source for the files.
 
 == Changelog == 
 
+= 0.0.5 =
+* Feature Changes    
+    * None
+* Technical Information
+    * Bug fixed in Twitter API call: it is used for the new updates page.
+* Known Issues
+    * None
+    
 = 0.0.4 =
 * Feature Changes    
     * None

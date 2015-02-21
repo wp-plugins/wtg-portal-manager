@@ -714,7 +714,7 @@ class WTGPORTALMANAGER_Requests {
     */
     public function setupportaltwitter() {
         global $wtgportalmanager_settings;
-        unset($wtgportalmanager_settings['api']['twitter']['apps']);
+
         $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_CURRENT]['consumer_key'] = $_POST['consumer_key'];
         $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_CURRENT]['consumer_secret'] = $_POST['consumer_secret'];
         $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_CURRENT]['access_token'] = $_POST['access_token'];

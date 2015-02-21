@@ -97,7 +97,7 @@ class WTGPORTALMANAGER_Twitter {
         $this->defaults['screenname'] = $wtgportalmanager_settings['api']['twitter']['apps'][$application]['screenname'];
         if( !$this->defaults['screenname'] ) { return false; }                                                                  
 
-        $res = $this->getTweets( $username, $count, $options );
+        $res = $this->getTweets( $username, $count, $options );      
         update_option( 'portal_last_twitteraip_error',$this->st_last_error );// all portals update this
         return $res;
     }
@@ -245,7 +245,7 @@ class WTGPORTALMANAGER_Twitter {
         if (empty($screenname)) return array('error'=>'Missing Twitter Feed Screen Name - Check Settings');
 
         $connection = new TwitterOAuth($key, $secret, $token, $token_secret);
-        $result = $connection->get('statuses/screenname', $options);
+        $result = $connection->get('statuses/user_timeline', $options);
 
         if (is_file($this->getCacheLocation())) {
             $cache = json_decode(file_get_contents($this->getCacheLocation()),true);

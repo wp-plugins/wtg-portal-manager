@@ -171,13 +171,14 @@ class WTGPORTALMANAGER {
             $this->TWITTER = self::load_class( "WTGPORTALMANAGER_Twitter", "class-twitter.php", 'classes' );   
                      
             $result = $this->TWITTER->startTwitter( false, 5, false, 'default' );// $username = false, $count = 20, $options = false, $application = 'default'         
-        
-            if( !$result || !is_array( $result ) )
+           
+            if( isset( $result['error'] ) || !is_array( $result ) )
             {
-                echo '<p>There are no updates for this portal.</p>';
+                echo '<p>There are no updates for this portal.</p>'; 
+                echo $result['error']; 
                 return;    
             }
-            
+    
             echo '<div class="portalmanager_update_item">';
                 echo '<ul>';
                     
@@ -187,9 +188,9 @@ class WTGPORTALMANAGER {
                         
                         echo '<img src="' . WTGPORTALMANAGER_IMAGES_URL . '/social/Twitter_bird_logo_100x100.png">';
                         
-                        echo '<p>' . $item ['created_at'] . '</p>';
+                        echo '<p>' . $item['created_at'] . '</p>';
                         echo '<br>';
-                        echo '<p>' . $item ['text'] . '</p>';
+                        echo '<p>' . $item['text'] . '</p>';
                         
                         echo '</li>';
                     }
