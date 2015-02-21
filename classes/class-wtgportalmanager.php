@@ -171,27 +171,32 @@ class WTGPORTALMANAGER {
             $this->TWITTER = self::load_class( "WTGPORTALMANAGER_Twitter", "class-twitter.php", 'classes' );   
                      
             $result = $this->TWITTER->startTwitter( false, 5, false, 'default' );// $username = false, $count = 20, $options = false, $application = 'default'         
-        }
         
-        echo '<div class="portalmanager_update_item">';
-            echo '<ul>';
-                
-                foreach( $result as $key => $item )
-                {         
-                    echo '<li>';
+            if( !$result || !is_array( $result ) )
+            {
+                echo '<p>There are no updates for this portal.</p>';
+                return;    
+            }
+            
+            echo '<div class="portalmanager_update_item">';
+                echo '<ul>';
                     
-                    echo '<img src="' . WTGPORTALMANAGER_IMAGES_URL . '/social/Twitter_bird_logo_100x100.png">';
-                    
-                    echo '<p>' . $item ['created_at'] . '</p>';
-                    echo '<br>';
-                    echo '<p>' . $item ['text'] . '</p>';
-                    
-                    echo '</li>';
-                }
-                 
-            echo '</ul>';
-        echo '</div>';
-                      
+                    foreach( $result as $key => $item )
+                    {         
+                        echo '<li>';
+                        
+                        echo '<img src="' . WTGPORTALMANAGER_IMAGES_URL . '/social/Twitter_bird_logo_100x100.png">';
+                        
+                        echo '<p>' . $item ['created_at'] . '</p>';
+                        echo '<br>';
+                        echo '<p>' . $item ['text'] . '</p>';
+                        
+                        echo '</li>';
+                    }
+                     
+                echo '</ul>';
+            echo '</div>';        
+        }   
     }
         
     /**
@@ -3059,7 +3064,7 @@ class WTGPORTALMANAGER {
     * @version 1.0
     */
     public function create_page_relationship( $portal_id, $page_id ) {
-        return $this->WTGPORTALMANAGER->add_portal_meta( $portal_id, 'page', $page_id, false );
+        return self::add_portal_meta( $portal_id, 'page', $page_id, false );
     }
     
     /**

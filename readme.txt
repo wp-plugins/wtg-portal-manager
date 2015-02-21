@@ -1,5 +1,5 @@
 === Plugin Name ===
-Contributors: WebTechGlobal
+Contributors: WebTechGlobal, Ryan Bayne
 Donate link: http://www.webtechglobal.co.uk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -85,6 +85,15 @@ This method is safer than using any other source for the files.
 
 == Changelog == 
 
+= 0.0.4 =
+* Feature Changes    
+    * None
+* Technical Information
+    * Bug relating to add_portal_meta() fixed.
+    * Handles the issue of no tweets being returned better.
+* Known Issues
+    * None
+    
 = 0.0.3 =
 * Feature Changes    
     * None

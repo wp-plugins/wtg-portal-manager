@@ -55,10 +55,7 @@ class WTGPORTALMANAGER_Contentupdates_View extends WTGPORTALMANAGER_View {
         return $this->meta_boxes_array = array(
             // array( id, title, callback (usually parent, approach created by Ryan Bayne), context (position), priority, call back arguments array, add to dashboard (boolean), required capability
             array( $this->view_name . '-setupportaltwitter', __( 'Portals Twitter', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal', 'default', array( 'formid' => 'setupportaltwitter' ), true, 'activate_plugins' ),
-            
-            // side
-            array( $this->view_name . '-setupupdates', __( 'Setup Updates Page', 'wtgportalmanager' ), array( $this, 'parent' ), 'side', 'default', array( 'formid' => 'setupupdates' ), true, 'activate_plugins' ),
-        );    
+       );    
     }
     
     /**
@@ -207,23 +204,6 @@ class WTGPORTALMANAGER_Contentupdates_View extends WTGPORTALMANAGER_View {
         echo '<p>Last Twitter API Error: ' . $last_portal_error.'</p>';        
 
         $this->UI->postbox_content_footer();                  
-    }   
-     
-    /**
-    * Enter Twitter application keys for the current portal.
-    * 
-    * @author Ryan Bayne
-    * @package WTG Portal Manager
-    * @since 0.0.1
-    * @version 1.0
-    */
-    public function postbox_contentupdates_setupupdates( $data, $box ) {                                
-        $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], __( 'Add your portals own Tweets to the portal update page.', 'wtgportalmanager' ), false );        
-
-        echo '<p>Most of this configuration can found on the application overview page on the <a href="http://dev.twitter.com/apps">http://dev.twitter.com</a> website.</p>';
-        echo '<p>When creating an application for this plugin, you don\'t need to set a callback location and you only need read access.</p>';
-        echo '<p>You will need to generate an oAuth token once you\'ve created the application. The button for that is on the bottom of the application overview page.</p>';
-                    
     }   
  
 }?>
