@@ -170,12 +170,12 @@ class WTGPORTALMANAGER {
             // we have the ability to pass arguments to this, it is optional
             $this->TWITTER = self::load_class( "WTGPORTALMANAGER_Twitter", "class-twitter.php", 'classes' );   
                      
-            $result = $this->TWITTER->startTwitter( false, 5, false, 'default' );// $username = false, $count = 20, $options = false, $application = 'default'         
+            $result = $this->TWITTER->startTwitter( 'WebTechGlobal', 5, false, 'default' );// $username = false, $count = 20, $options = false, $application = 'default'         
            
             if( isset( $result['error'] ) || !is_array( $result ) )
             {
-                echo '<p>There are no updates for this portal.</p>'; 
-                echo $result['error']; 
+                // error should be logged already
+                echo '<p>There are no updates for this portal.</p>';  
                 return;    
             }
     
@@ -361,8 +361,8 @@ class WTGPORTALMANAGER {
     * @version 1.0
     */
     public function plugin_admin_register_styles() {
-        wp_register_style( 'wtgportalmanager_css_notification',plugins_url( 'wtgportalmanager/css/notifications.css' ), array(), '1.0.0', 'screen' );
-        wp_register_style( 'wtgportalmanager_css_admin',plugins_url( 'wtgportalmanager/css/admin.css' ), __FILE__);          
+        wp_register_style( 'wtgportalmanager_css_notification',plugins_url( 'wtg-portal-manager/css/notifications.css' ), array(), '1.0.0', 'screen' );
+        wp_register_style( 'wtgportalmanager_css_admin',plugins_url( 'wtg-portal-manager/css/admin.css' ), __FILE__);          
     }
     
     /**
@@ -435,7 +435,7 @@ class WTGPORTALMANAGER {
     * @version 1.0
     */
     public function plugin_enqueue_public_styles() {    
-        wp_register_style( 'wtgportalmanager_css_public',plugins_url( 'wtgportalmanager/css/public.css' ), __FILE__);
+        wp_register_style( 'wtgportalmanager_css_public',plugins_url( 'wtg-portal-manager/css/public.css' ), __FILE__);
         wp_enqueue_style( 'wtgportalmanager_css_public' );
     }
            

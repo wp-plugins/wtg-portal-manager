@@ -143,7 +143,7 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
         }
     } 
 
-    public function screens_menuoptions( $current){
+    public function screens_menuoptions( $current ){
         global $c2pm;
         foreach( $c2pm as $page_slug => $page_array ){ 
             foreach( $c2pm[$page_slug]['tabs'] as $whichvalue => $screen_array ){

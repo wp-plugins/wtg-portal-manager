@@ -85,6 +85,14 @@ This method is safer than using any other source for the files.
 
 == Changelog == 
 
+= 0.0.6 =
+* Feature Changes    
+    * None
+* Technical Information
+    * Correction in main file and plugin folder naming which fixes CSS issue.
+* Known Issues
+    * None
+    
 = 0.0.5 =
 * Feature Changes    
     * None

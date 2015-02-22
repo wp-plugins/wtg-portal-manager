@@ -65,7 +65,7 @@ class WTGPORTALMANAGER_Twitter {
     * @param mixed $options
     * @param mixed $application use to call a set of API keys
     */
-    public function startTwitter( $username = false, $count = 20, $options = false, $application = 'default' ) {
+    public function startTwitter( $user_timeline = false, $count = 20, $options = false, $application = 'default' ) {
         global $wtgportalmanager_settings;
 
         $this->defaults['cache_expire'] = 3600;
@@ -94,10 +94,17 @@ class WTGPORTALMANAGER_Twitter {
         if( !$this->defaults['token_secret'] ) { return false; }
         
         // screen name i.e. WebTechGlobal
-        $this->defaults['screenname'] = $wtgportalmanager_settings['api']['twitter']['apps'][$application]['screenname'];
-        if( !$this->defaults['screenname'] ) { return false; }                                                                  
+        $this->defaults['user_timeline'] = 'WebTechGlobal';
+        if( isset( $wtgportalmanager_settings['api']['twitter']['apps'][$application]['screenname'] ) )
+        {
+            $this->defaults['user_timeline'] = $wtgportalmanager_settings['api']['twitter']['apps'][$application]['screenname'];   
+        }
+        elseif( $user_timeline !== false && is_string( $user_timeline ) )
+        {
+            $this->defaults['user_timeline'] = $wtgportalmanager_settings['api']['twitter']['apps'][$application]['screenname'];
+        }                                                                  
 
-        $res = $this->getTweets( $username, $count, $options );      
+        $res = $this->getTweets( $this->defaults['user_timeline'], $count, $options );      
         update_option( 'portal_last_twitteraip_error',$this->st_last_error );// all portals update this
         return $res;
     }
