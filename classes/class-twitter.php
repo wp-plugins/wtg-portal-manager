@@ -60,10 +60,10 @@ class WTGPORTALMANAGER_Twitter {
     * @since 0.0.1
     * @version 1.0
     * 
-    * @param mixed $username
+    * @param mixed $user_timeline over-rides all other settings, pass false to let the plugin do its more dynamic thing
     * @param mixed $count
     * @param mixed $options
-    * @param mixed $application use to call a set of API keys
+    * @param mixed $application
     */
     public function startTwitter( $user_timeline = false, $count = 20, $options = false, $application = 'default' ) {
         global $wtgportalmanager_settings;
@@ -94,18 +94,33 @@ class WTGPORTALMANAGER_Twitter {
         if( !$this->defaults['token_secret'] ) { return false; }
         
         // screen name i.e. WebTechGlobal
-        $this->defaults['user_timeline'] = 'WebTechGlobal';
-        if( isset( $wtgportalmanager_settings['api']['twitter']['apps'][$application]['screenname'] ) )
+        if( is_string( $user_timeline ) )
         {
-            $this->defaults['user_timeline'] = $wtgportalmanager_settings['api']['twitter']['apps'][$application]['screenname'];   
+            // over-riding all other settings for the user_timeline
+            $this->defaults['user_timeline'] = $user_timeline;    
         }
-        elseif( $user_timeline !== false && is_string( $user_timeline ) )
+        else
         {
-            $this->defaults['user_timeline'] = $wtgportalmanager_settings['api']['twitter']['apps'][$application]['screenname'];
-        }                                                                  
-
+            $this->defaults['user_timeline'] = 'WebTechGlobal';
+            if( isset( $wtgportalmanager_settings['api']['twitter']['apps'][$application]['screenname'] ) )
+            {
+                $this->defaults['user_timeline'] = $wtgportalmanager_settings['api']['twitter']['apps'][$application]['screenname'];   
+            }
+            elseif( $user_timeline !== false && is_string( $user_timeline ) )
+            {
+                $this->defaults['user_timeline'] = $wtgportalmanager_settings['api']['twitter']['apps'][$application]['screenname'];
+            }                                                                  
+        }
+        
         $res = $this->getTweets( $this->defaults['user_timeline'], $count, $options );      
-        update_option( 'portal_last_twitteraip_error',$this->st_last_error );// all portals update this
+   
+        // store error
+        if( isset( $res['error'] ) && is_string( $res['error'] ) ) {
+            $this->WTGPORTALMANAGER = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER', 'class-wtgportalmanager.php', 'classes' ); # plugin specific functions
+            $wtgportalmanager_settings['api']['twitter']['apps'][$application]['error'] = $res['error'];
+            $this->WTGPORTALMANAGER->update_settings( $wtgportalmanager_settings );
+        }
+        
         return $res;
     }
         

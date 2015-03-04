@@ -1,19 +1,12 @@
 <?php
 /**
- * Configure the Updates page. Rate of updates, total items on screen, what sources to use,
- * and interactive functionality for both visitors and administrators. 
+ * Very similar to the Updates page, can even include the same updates. However
+ * this page is intended to include the communities activity.
  * 
- * The updates page is intended to show updates by the website owner, webmaster and developers for
- * the specific project. This page is not to be diluted by public activity. This page will be mostly
- * automated with no manual entries.   
- * 
- * Twitter
- * Facebook
- * LinkedIn
- * Blog Categories
- * Hot Forum Topics 
- * New versions and patches of software related portals.
- * Important service changes including terms and conditions.  
+ * Twitter follow/retweet
+ * Facebook likes   
+ * Blog post comments
+ * New forum topics and replies                                                                       
  *
  * @package WTG Portal Manager
  * @subpackage Views
@@ -24,15 +17,7 @@
 // Prohibit direct script loading
 defined( 'ABSPATH' ) || die( 'No direct script access allowed!' );
 
-/**
- * Tools to configure updates page.   
- *
- * @package WTG Portal Manager
- * @subpackage Views
- * @author Ryan Bayne
- * @since 0.0.1
- */
-class WTGPORTALMANAGER_Contentupdates_View extends WTGPORTALMANAGER_View {
+class WTGPORTALMANAGER_Contentactivity_View extends WTGPORTALMANAGER_View {
 
     /**
      * Number of screen columns for post boxes on this screen
@@ -43,7 +28,7 @@ class WTGPORTALMANAGER_Contentupdates_View extends WTGPORTALMANAGER_View {
      */
     protected $screen_columns = 2;
     
-    protected $view_name = 'contentupdates';
+    protected $view_name = 'contentactivity';
     
     public $purpose = 'normal';// normal, dashboard, metaarray (return the meta array only)
     
@@ -59,7 +44,7 @@ class WTGPORTALMANAGER_Contentupdates_View extends WTGPORTALMANAGER_View {
         // array of meta boxes + used to register dashboard widgets (id, title, callback, context, priority, callback arguments (array), dashboard widget (boolean) )   
         return $this->meta_boxes_array = array(
             // array( id, title, callback (usually parent, approach created by Ryan Bayne), context (position), priority, call back arguments array, add to dashboard (boolean), required capability
-            array( $this->view_name . '-selectupdatesources', __( 'Select Sources', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal', 'default', array( 'formid' => 'selectupdatesources' ), true, 'activate_plugins' ),
+            array( $this->view_name . '-selectactivitysources', __( 'Select Sources', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal', 'default', array( 'formid' => 'selectactivitysources' ), true, 'activate_plugins' ),
        );    
     }
     
@@ -83,7 +68,6 @@ class WTGPORTALMANAGER_Contentupdates_View extends WTGPORTALMANAGER_View {
         $this->DB = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_DB', 'class-wpdb.php', 'classes' );
         $this->PHP = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_PHP', 'class-phplibrary.php', 'classes' );
         $this->FORMS = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_Formbuilder', 'class-forms.php', 'classes' );
-        $this->PHPBB = $this->WTGPORTALMANAGER->load_class( "WTGPORTALMANAGER_PHPBB", "class-phpbb.php", 'classes','pluginmenu' );
         
         // we have the ability to pass arguments to this, it is optional
         $this->TWITTER = $this->WTGPORTALMANAGER->load_class( "WTGPORTALMANAGER_Twitter", "class-twitter.php", 'classes' );
@@ -148,20 +132,15 @@ class WTGPORTALMANAGER_Contentupdates_View extends WTGPORTALMANAGER_View {
     * @since 0.0.1
     * @version 1.0
     */
-    public function postbox_contentupdates_selectupdatesources( $data, $box ) {                                
-        $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], __( 'Select information sources for your Updates page. Remember to configure each source on the Content Sources view.', 'wtgportalmanager' ), false );        
+    public function postbox_contentactivity_selectactivitysources( $data, $box ) {                                
+        $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], __( 'Select information sources for your current portals Activity page. You may not have configured each yet so remember to test them. Settings for some may not exist until you have other integrated plugins installed.', 'wtgportalmanager' ), false );        
         $this->FORMS->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );
-
-        global $wtgportalmanager_settings;
         ?>  
 
             <table class="form-table">                  
             <?php
-            $items_array = array( 'twitter' => 'Twitter', 'facebook' => 'Facebook', 'forum' => __( 'Forum (by admin only)', 'wtgportalmanager' ), 'blogposts' => __( 'Blog Posts (by admin only)', 'wtgportalmanager' ), 'newversions' => __( 'New Versions', 'wtgportalmanager' ), 'pricedrop' => __( 'Price Drop', 'wtgportalmanager' ), 'newtasks' => __( 'New Tasks', 'wtgportalmanager' ) );
-            $current_items = array();
-            $current_items_result = $this->WTGPORTALMANAGER->get_portal_meta( WTGPORTALMANAGER_ADMINCURRENT, 'updatepagesources', true );
-            if( $current_items_result ) { $current_items = $current_items_result; }
-            $this->FORMS->checkboxes_basic( $box['args']['formid'], 'informationsources', 'informationsources', __( 'Available Sources', 'wtgportalmanager' ), $items_array, $current_items, true, array(/* validation */), true );        
+            $items_array = array( 'twitter' => 'Twitter', 'facebook' => 'Facebook', 'forum' => 'Forum', 'blogposts' => __( 'Blog Posts', 'wtgportalmanager' ), 'postcomments' => __( 'Post Comments', 'wtgportalmanager' ), 'questionsandanswers' => __( 'Questions and Answers', 'wtgportalmanager' ), 'testimonials' => __( 'Testimonials', 'wtgportalmanager' ), 'downloads' => __( 'Downloads', 'wtgportalmanager' ), 'pricedrop' => __( 'Price Drop', 'wtgportalmanager' ), 'sales' => __( 'Sales', 'wtgportalmanager' ), 'newtasks' => __( 'New Tasks', 'wtgportalmanager' ) );
+            $this->FORMS->checkboxes_basic( $box['args']['formid'], 'informationsources', 'informationsources', __( 'Available Sources', 'wtgportalmanager' ), $items_array, array(/* current */), true, array(/* validation */), true );        
             ?>
             </table>
 

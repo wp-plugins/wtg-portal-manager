@@ -213,7 +213,7 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
 
                 <div class="welcome-panel-content">
 
-                    <h3>You are working on: ' . $portal_name . '</h3>
+                    <h3>You are working on: ' . $portal_name . ' (' . $active_portal_id . ')</h3>
  
                     '. self::info_area( '', $portal_description ) .'
                     
@@ -1237,14 +1237,12 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
     /**
     * use to create an in-content notice i.e. the notice is built and echoed straight away it is not
     * stored within an array for output at a later point in the plugin or WordPress loading 
-    */
-    
-    /**
+    * 
     * Used to build the HTML for a notice which can be stored or displayed instantly.
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 6.0.0
+    * @since 0.0.1
     * @version 1.1.3
     * 
     * @returns HTML notice

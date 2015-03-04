@@ -128,7 +128,7 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
             self::option_subline( __( 'This is a technical matter please report it. There should be a form input here that you may require before you continue.', 'wtgportalmanager' ), __( 'Invalid Input Type', 'wtgportalmanager' ) );
             return false;    
         }      
-        
+     
         // unset object values to prevent a previous inputs settings being applied
         unset( $this->formid );
         unset( $this->inputtype );
@@ -158,7 +158,7 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
         unset( $this->maximumchecks );
         unset( $this->html5 );
         unset( $this->ajax );
-        
+        unset( $this->groupcheckboxes );
         
         // add values to class object, these ones are the most common and so we set them early
         $this->formid = $formid;
@@ -191,7 +191,8 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
         if( isset( $atts_array['maximumchecks'] ) ) { $this->maximumchecks = $atts_array['maximumchecks']; }
         if( isset( $atts_array['html5'] ) ) { $this->html5 = $atts_array['html5']; }
         if( isset( $atts_array['ajax'] ) ) { $this->ajax = $atts_array['ajax']; }
-
+        if( isset( $atts_array['groupcheckboxes'] ) ) { $this->groupcheckboxes = $atts_array['groupcheckboxes']; }
+        
         // register the input - also uses the above values, the idea is to register everything and ensure it has not been changed by hacker before submission
         self::register_input();
         
@@ -319,10 +320,10 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
                              
                     $box_checked = 0;
                     $i = 0;
-                    
+    
                     // grouped or separate checkboxes require different process - default is grouped
                     if( !isset( $this->form_val_arr[ $user_ID ][ $formid ][ $input_name ]['groupcheckboxes'] ) || $this->form_val_arr[ $user_ID ][ $formid ][ $input_name ]['groupcheckboxes'] === true ) {
-                        
+                              
                         // ensure checkbox array exists (user may not have made any selection)
                         if( isset( $_POST[ $input_name ] ) ) {
                             foreach( $input_array['itemsarray'] as $item_value => $item_title ) { 
@@ -336,8 +337,9 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
                             }                            
                         }
                             
-                    } else {   
-                    
+                    } 
+                    else 
+                    {   
                         foreach( $input_array['itemsarray'] as $item_value => $item_title ) { 
                             
                             // grouped items name and ID include form + item value to be unique on the entire page
@@ -356,13 +358,13 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
                     }                    
                     
                     // if not enough checked FAIL
-                     if( $box_checked < $input_array['minimumchecks'] ) {
+                     if( isset( $this->minimumchecks ) && $box_checked < $this->minimumchecks ) {
                         $this->UI->create_notice( sprintf( __( 'You have not checked enough boxes for the %s option.', 'csv2post' ), $input_array['optiontitle'] ), 'error', 'Small', __( 'Check More Boxes', 'wtgportalmanager' ) );                    
                         return false;                    
                     }
-                                       
+                                
                     // if too many checked....you guessed it FAIL
-                    if( $box_checked > $input_array['maximumchecks'] ) {
+                    if( isset( $this->maximumchecks ) && $box_checked > $this->maximumchecks ) {
                         $this->UI->create_notice( sprintf( __( 'You have checked too many boxes for the %s option.', 'csv2post' ), $input_array['optiontitle'] ), 'error', 'Small', __( 'Please Uncheck Boxes', 'wtgportalmanager' ) );                    
                         return false;                    
                     }                    
@@ -520,17 +522,25 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
                         }
                         
                     } elseif( !isset( $this->form_val_arr[ $user_ID ][ $form_id ][ $input_name ]['groupcheckboxes'] ) || $this->form_val_arr[ $user_ID ][ $form_id ][ $input_name ]['groupcheckboxes'] === true ) {
-                     
+                 
                         // ensure array exists - user may not have checked a single box
                         if( isset( $_POST[ $input_name ] ) && is_array( $_POST[ $input_name ] ) ) {
                             // loop through the submitted array and ensure all values are registered
-                            $failed_to_match = false;
+                            $failed_to_match = false;     
                             $i = 0;
                             
                             foreach( $_POST[ $input_name ] as $submitted_value ) {
+                                
+                                /*  I think this method has worked but now it does not - is it because the registerd array has changed I wonder
                                 if( !in_array( $submitted_value, $input_array['itemsarray'] ) ) {
-                                    $failed_to_match = true;
+                                    $failed_to_match = true;    var_dump( $input_array['itemsarray'] ); var_dump( $submitted_value );
+                                } */
+                                
+                                // submitted value should be a key in the registered array (atleast that seems to be the case now)
+                                if( !isset( $input_array['itemsarray'][ $submitted_value ] ) ) {
+                                    $failed_to_match = true;    
                                 }
+                                
                                 ++$i;       
                             }
             

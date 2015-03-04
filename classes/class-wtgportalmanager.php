@@ -79,9 +79,9 @@ class WTGPORTALMANAGER {
             array( 'admin_print_styles',             'plugin_admin_print_styles',                              'pluginscreens' ),
             array( 'wp_enqueue_scripts',             'plugin_enqueue_public_styles',                           'publicpages' ),            
             array( 'admin_notices',                  'admin_notices',                                          'admin_notices' ),
-            //array( 'init',                           'init_portal',                                            'all' ),            
+            array( 'init',                           'init_portal',                                            'all' ),            
             array( 'init',                           'plugin_shortcodes',                                      'all' ),            
-            array( 'widgets_init',                   'register_sidebars',                                      'all' ),
+            array( 'widgets_init',                   'register_sidebars',                                      'all' ),   
         ),        
                   
         $plugin_filters = array(
@@ -108,7 +108,8 @@ class WTGPORTALMANAGER {
         $this->PHP = self::load_class( 'WTGPORTALMANAGER_PHP', 'class-phplibrary.php', 'classes' );
         $this->Install = self::load_class( 'WTGPORTALMANAGER_Install', 'class-install.php', 'classes' );
         $this->Files = self::load_class( 'WTGPORTALMANAGER_Files', 'class-files.php', 'classes' );
-  
+        $this->PHPBB = self::load_class( "WTGPORTALMANAGER_PHPBB", "class-phpbb.php", 'classes','pluginmenu' );
+        
         $wtgportalmanager_settings = self::adminsettings();
   
         $this->add_actions();
@@ -127,7 +128,23 @@ class WTGPORTALMANAGER {
             $this->Tabmenu = self::load_class( "WTGPORTALMANAGER_TabMenu", "class-pluginmenu.php", 'classes','pluginmenu' );    
         }            
     }
- 
+
+    /**
+    * $_POST and $_GET request processing procedure.
+    * 
+    * function was reduced to two lines, the contents mode to WTGPORTALMANAGER_Requests itself.
+    *
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0.4
+    */
+    public function process_admin_POST_GET() {  
+        // include the class that processes form submissions and nonce links
+        $WTGPORTALMANAGER_REQ = self::load_class( 'WTGPORTALMANAGER_Requests', 'class-requests.php', 'classes' );
+        $WTGPORTALMANAGER_REQ->process_admin_request();
+    }
+        
     /**
     * Registers shortcodes. 
     * 
@@ -159,50 +176,186 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     * 
-    * @todo make use of cache settings for each API and create a cache which all API results as that one main cache may be quicker
+    * @todo create and use cache settings for each individual API (different sources will have different expiry)
+    * @todo create a cache for all results - essentially store the entire HTML in .txt file
+    * @todo each time a new source is added, consider new but optional shortcode attributes that may avoid queries (remove this TODO once most sources added)
     */
-    public function portal_updates_shortcode() {
+    public function portal_updates_shortcode( $atts ) {
         global $wtgportalmanager_settings;
+
+        // default output for when no updates are found or there is a critical issue
+        $noupdates_output = "<p>There are no updates for this portal.</p>";             
+
+        // get the current portals meta value for "updatepagesources" - it should return an array of applied data sources             
+        $sources_array = self::get_portal_meta( WTGPORTALMANAGER_PUBLICPORTALID, 'updatepagesources' );
         
-        // Twitter
-        if( isset( $wtgportalmanager_settings['api']['twitter']['active'] ) )
-        {
+        // we cant continue if no sources are setup for the update page, it's partly a security issue and to avoid a lot of errors
+        if( !is_array( $sources_array ) ) {
+            echo $noupdates_output;
+            return;    
+        }
+                
+        // variable per source - set them all at once for a simplier argument later
+        $twitter_status = false;
+        $facebook_status = false;
+        $forum_status = false;
+        $blogposts_status = false;
+        $newversions_status = false;
+        $pricedrop_status = false;
+        $newtasks_status = false;        
+            
+        // set twitter status
+        if( isset( $wtgportalmanager_settings['api']['twitter']['active'] ) && $wtgportalmanager_settings['api']['twitter']['active'] == 'enabled' ) {
+            if( in_array( 'twitter', $sources_array ) ) {       
+                $twitter_status = true;
+            }  
+        }      
+        
+        // set facebook status
+        
+        // set forum (phpBB, possibly other forum software) status
+        if( isset( $wtgportalmanager_settings['forumconfig']['status'] ) && $wtgportalmanager_settings['forumconfig']['status'] == 'enabled' ) {
+            if( in_array( 'forum', $sources_array ) ) {
+                $forum_status = true;
+            }    
+        }
+           
+        // set blog posts status
+        if( in_array( 'blogposts', $sources_array ) ) {
+            $maincategory_id = self::get_portal_meta( WTGPORTALMANAGER_PUBLICPORTALID, 'maincategory', true );
+            if( is_numeric( $maincategory_id ) ) { 
+                $blogposts_status = true;
+            }
+        }
+        
+        // set new versions (software project management solutions) status
+        
+        // set price drop (integrated cart plugins) status
+        
+        // set new WTG Tasks Manager (or other solutions) entries status  
+        
+        // build an array of html wrapped items - we need to order items by ['updatetime']
+        $html_wrapped_items_array = array();
+                                      
+        // add Twitter items
+        if( $twitter_status === true ) {                        
             // we have the ability to pass arguments to this, it is optional
             $this->TWITTER = self::load_class( "WTGPORTALMANAGER_Twitter", "class-twitter.php", 'classes' );   
-                     
-            $result = $this->TWITTER->startTwitter( 'WebTechGlobal', 5, false, 'default' );// $username = false, $count = 20, $options = false, $application = 'default'         
+                      
+            $result = $this->TWITTER->startTwitter( $atts['usertimeline'], 20, false, $atts['appaccount'] );// $username = false, $count = 20, $options = false, $application = 'default'         
+                
+            if( !isset( $result['error'] ) ) {     
            
-            if( isset( $result['error'] ) || !is_array( $result ) )
-            {
-                // error should be logged already
-                echo '<p>There are no updates for this portal.</p>';  
-                return;    
-            }
-    
-            echo '<div class="portalmanager_update_item">';
-                echo '<ul>';
+                foreach( $result as $key => $item ) { 
                     
-                    foreach( $result as $key => $item )
-                    {         
-                        echo '<li>';
-                        
-                        echo '<img src="' . WTGPORTALMANAGER_IMAGES_URL . '/social/Twitter_bird_logo_100x100.png">';
-                        
-                        echo '<p>' . $item['created_at'] . '</p>';
-                        echo '<br>';
-                        echo '<p>' . $item['text'] . '</p>';
-                        
-                        echo '</li>';
-                    }
-                     
-                echo '</ul>';
-            echo '</div>';        
+                    $date = new DateTime( $item['created_at'] );
+                    $made_DateTime = $date->format('Y-m-d H:i:s');
+
+                    $new_item = '';    
+                    $new_item .= '<li><img src="' . WTGPORTALMANAGER_IMAGES_URL . '/logos/twitter_logo_100x100.png">';
+                    $new_item .= '<p>' . $made_DateTime . '</p>';
+                    $new_item .= '<br>';
+                    $new_item .= '<p>' . $item['text'] . '</p>';
+                    $new_item .= '</li>';
+                    
+                    $html_wrapped_items_array[ strtotime( $item['created_at'] ) ] = $new_item;
+                }
+            }
         }   
+        
+        // add Facebook items 
+        if( $facebook_status ) {
+                 
+        }
+        
+        // add Forum items
+        if( $forum_status ) {    
+            
+            $result = $this->PHPBB->get_posts_inrange_simple(); 
+             
+            if( $result ) {     
+                  
+                foreach( $result as $key => $item ) {    
+       
+                    $new_item = '';     
+                    $new_item .= '<li><img src="' . WTGPORTALMANAGER_IMAGES_URL . '/logos/phpbb_logo_100x100.png">';
+                    $new_item .= '<p>' . date( 'Y-m-d H:i:s', $item['post_time'] ) . '</p>';
+                    $new_item .= '<br>';
+                    $new_item .= '<p>' . $item['post_subject'] . '</p>';
+                    $new_item .= '</li>';
+                    
+                    $html_wrapped_items_array[ (int) $item['post_time']  ] = $new_item;
+                }
+            }              
+        }
+        
+        // add WP posts as items
+        if( $blogposts_status ) {
+             
+            $args = array(
+                'posts_per_page'   => 20,
+                'category'         => $maincategory_id,
+                'post_type'        => 'post',
+                'post_status'      => 'publish',
+                'suppress_filters' => true 
+            );  
+                        
+            $result = get_posts( $args );
+            
+            if( $result ) {     
+                  
+                foreach( $result as $key => $item ) {    
+       
+                    $new_item = '';     
+                    $new_item .= '<li><img src="' . WTGPORTALMANAGER_IMAGES_URL . '/logos/wordpress_logo_100x100.png">';
+                    $new_item .= '<p>' . $item->post_date . '</p>';
+                    $new_item .= '<br>';
+                    $new_item .= '<p>' . wp_trim_excerpt( $item->post_content ) . '</p>';
+                    $new_item .= '</li>';
+                    
+                    $html_wrapped_items_array[ strtotime( $item->post_date )  ] = $new_item;
+                }
+            }
+        }
+        
+        // add new version notifications
+        if( $newversions_status ) {
+            
+        }
+        
+        // add price drops
+        if( $pricedrop_status ) {
+            
+        }
+        
+        // add new TODO tasks
+        if( $newtasks_status ) {
+            
+        }
+              
+        // put array into order by key (the time)
+        krsort ( $html_wrapped_items_array, SORT_NUMERIC  );
+    
+        // output (replaces shortcode with the value we return)
+        $output = '
+        <div class="portalmanager_update_item">
+            <ul>
+        ';
+                  
+        foreach( $html_wrapped_items_array as $key => $next_item ) {
+            $output .= $next_item;    
+        }
+        
+        $output .= '
+            </ul>
+        </div>';
+                        
+        return $output;
     }
         
     /**
     * Determines if the content being visited is part of a portal.
-    * Then defines WTGPORTALMANAGER_ID for further hookes and filters. 
+    * Then defines WTGPORTALMANAGER_PUBLICPORTALID for further hookes and filters. 
     * 
     * Also adds meta to the current post for use by the themes sidebar unless
     * the meta already exists. The meta is added on the basis that the post ID exists
@@ -226,7 +379,7 @@ class WTGPORTALMANAGER {
         $post_type = get_post_type( $post_id );
                
         /**
-        *  Determine Content/View Type within WTG Portal Manager
+        *  a) Determine Content/View Type (specific terms used in WTG Portal Manager).
         * 
         *  page
         *  mainpage
@@ -235,11 +388,10 @@ class WTGPORTALMANAGER {
         *  subcategory
         *  media
         * 
-        *  The above are meta_key in the portals meta table. Once one is picked we use
-        *  that + the $post_id to establish if the content belongs to a portal. 
+        *  b) Run procedure for one or more applicable types of content that have a relationship
+        *  to the current post and portal.
         * 
-        *  With that information I will modify $wp_registered_sidebars, replacing sidebar positions
-        *  users custom made sidebars.
+        *  c) Using post ID we can establish if the post is related to ANY portal and get that portals ID.
         */
         $WTGPORTALMANAGER_DB = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_DB', 'class-wpdb.php', 'classes' );
         
@@ -248,21 +400,20 @@ class WTGPORTALMANAGER {
         // category is handled differently 
         if( isset( $_GET['cat'] ) && is_numeric( $_GET['cat'] ) ) 
         {
-            // we will get a portal id if meta record contains category ID and "maincategory" as the key
-            $catid = $_GET['cat'];                  
-            $portal_id = $WTGPORTALMANAGER_DB->get_value( 'webtechglobal_portal_id', $wpdb->prefix . 'webtechglobal_portalmeta', "meta_key = 'maincategory' AND meta_value = '$catid'" ); 
+            // we will get a portal id if meta record contains category ID and "maincategory" as the key                  
+            $portal_id = $WTGPORTALMANAGER_DB->get_value( 'webtechglobal_portal_id', $wpdb->prefix . 'webtechglobal_portalmeta', "meta_key = 'maincategory' AND meta_value = '"  . $_GET['cat'] . "'" ); 
             if( $portal_id && is_numeric( $portal_id ) ) 
             {   
-                define( "WTGPORTALMANAGER_ID", $portal_id );  
+                define( "WTGPORTALMANAGER_PUBLICPORTALID", $portal_id );  
                 $content_type = 'maincategory';// WTG Portal Manager can now apply a primary/main category treatment whatever that is to be   
             } 
             else
             {   
                 // do the same as above only this time we are looking for sub-categories which may be treated different with a portal
-                $portal_id = $WTGPORTALMANAGER_DB->get_value( 'webtechglobal_portal_id', $wpdb->prefix . 'webtechglobal_portalmeta', "meta_key = 'subcategory' AND meta_value = '$catid'" );    
+                $portal_id = $WTGPORTALMANAGER_DB->get_value( 'webtechglobal_portal_id', $wpdb->prefix . 'webtechglobal_portalmeta', "meta_key = 'subcategory' AND meta_value = '"  . $_GET['cat'] . "'" );    
                 if( $portal_id && is_numeric( $portal_id ) ) 
                 {
-                    define( "WTGPORTALMANAGER_ID" , $portal_id );
+                    define( "WTGPORTALMANAGER_PUBLICPORTALID" , $portal_id );
                     $content_type = 'subcategory';// WTG Portal Manager can now apply a primary/main category treatment whatever that is to be   
                 }                    
             }
@@ -275,12 +426,13 @@ class WTGPORTALMANAGER {
             $portalmeta_row = $WTGPORTALMANAGER_DB->selectrow( $wpdb->prefix . 'webtechglobal_portalmeta', "meta_value = '$post_id'", 'webtechglobal_portal_id, meta_key' );
  
             if( is_numeric( $portalmeta_row->webtechglobal_portal_id ) ) {
-                define( "WTGPORTALMANAGER_ID", $portalmeta_row->webtechglobal_portal_id );
+                define( "WTGPORTALMANAGER_PUBLICPORTALID", $portalmeta_row->webtechglobal_portal_id );
             }
         }  
   
-        // get the portals sidebars so we can obtain the meta_key used by the theme
-        if( $post_id !== 0 && is_numeric( $post_id ) && defined( 'WTGPORTALMANAGER_ID' ) )
+        /*   I think this needs removed and something clearer established
+        
+        if( $post_id !== 0 && is_numeric( $post_id ) && defined( 'WTGPORTALMANAGER_PUBLICPORTALID' ) )
         {             
             $themes_sidebars_array = self::get_themes_integration_info( 'sidebars' );
             if( $themes_sidebars_array )
@@ -291,8 +443,8 @@ class WTGPORTALMANAGER {
                     if( isset( $sidebar['metakey'] ) ) 
                     {   
                         // get portal table meta - get the sidebar ID assigned to the post meta_key in the portal meta_key column
-                        // yes - I store a POST meta key in the PORTAL meta table, specifically in the meta_key column 
-                        $sidebar_id = get_metadata( 'webtechglobal_portal', WTGPORTALMANAGER_ID, $sidebar['metakey'], true );
+                        // I store a POST meta key in the PORTAL meta table, specifically in the meta_key column 
+                        $sidebar_id = get_metadata( 'webtechglobal_portal', WTGPORTALMANAGER_PUBLICPORTALID, $sidebar['metakey'], true );
                     
                         // does post have meta holding the sidebar ID - if not add or update it
                         $meta_value = get_metadata( 'post', $post_id, $sidebar['metakey'], true );
@@ -307,6 +459,8 @@ class WTGPORTALMANAGER {
                 }        
             }
         }  
+        
+        */
     }
     
     /**
@@ -390,8 +544,7 @@ class WTGPORTALMANAGER {
         wp_enqueue_script( 'wp-pointer' );
         wp_enqueue_style( 'wp-pointer' );          
     }    
- 
-    
+   
     /**
      * Enqueue a CSS file with ability to switch from .min for debug
      *
@@ -603,10 +756,11 @@ class WTGPORTALMANAGER {
      * @since 0.0.1
      * @version 1.0
      */
-     public function load_admin_page() {        
+     public function load_admin_page() { 
+            
         // set current active portal
-        if(!defined( "WTGPORTALMANAGER_CURRENT" ) ){define( "WTGPORTALMANAGER_CURRENT", self::get_active_portal_id() );}
-
+        if(!defined( "WTGPORTALMANAGER_ADMINCURRENT" ) ){define( "WTGPORTALMANAGER_ADMINCURRENT", self::get_active_portal_id() );}
+                       
         // load tab menu class which contains help content array
         $WTGPORTALMANAGER_TabMenu = self::load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
         
@@ -898,7 +1052,7 @@ class WTGPORTALMANAGER {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 6.0.0
+    * @since 0.0.1
     * @version 1.0
     */       
     public function is_installed() {
@@ -1120,7 +1274,7 @@ class WTGPORTALMANAGER {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 6.0.0
+    * @since 0.0.1
     * @version 1.2.8
     */
     public function admin_menu() {    
@@ -1235,23 +1389,7 @@ class WTGPORTALMANAGER {
         }      
         
         echo '</h2>';
-    }   
-        
-    /**
-    * $_POST and $_GET request processing procedure.
-    * 
-    * function was reduced to two lines, the contents mode to WTGPORTALMANAGER_Requests itself.
-    *
-    * @author Ryan R. Bayne
-    * @package WTG Portal Manager
-    * @since 0.0.1
-    * @version 1.0.4
-    */
-    public function process_admin_POST_GET() {  
-        // include the class that processes form submissions and nonce links
-        $WTGPORTALMANAGER_REQ = self::load_class( 'WTGPORTALMANAGER_Requests', 'class-requests.php', 'classes' );
-        $WTGPORTALMANAGER_REQ->process_admin_request();
-    }  
+    }     
 
     /**
     * Used to display this plugins notices on none plugin pages i.e. dashboard.
@@ -2912,19 +3050,7 @@ class WTGPORTALMANAGER {
         } 
         
         return $content;    
-    }   
-
-    /**
-    * Add portal meta data.
-    * 
-    * @author Ryan R. Bayne
-    * @package WTG Portal Manager
-    * @since 0.0.1
-    * @version 1.0
-    */
-    public function add_portal_meta( $portal_id, $meta_key, $meta_value, $unique = true ) {
-        add_metadata( 'webtechglobal_portal', $portal_id, $meta_key, $meta_value, $unique );    
-    }
+    }  
        
     /**
     * Inserts a new portal
@@ -3253,7 +3379,79 @@ class WTGPORTALMANAGER {
             }
         } 
         return false; 
-    }        
+    }  
+    
+    /**
+    * Saves Twitter API app account for the giving portal.
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function update_portals_twitter_api( $portal_id, $consumer_key, $consumer_secret, $access_token, $token_secret, $screenname ) {
+        $meta_value_array = array(
+            'consumer_key' => $consumer_key,
+            'consumer_secret' => $consumer_secret,
+            'access_token' => $access_token,
+            'token_secret' => $token_secret, 
+            'screenname' => $screenname // aka users_timeline
+        );
+        return update_metadata( 'webtechglobal_portal', $portal_id, 'twitterapi', $meta_value_array, $previous_value );    
+    }
+    
+    /**
+    * Add portal meta data.
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function add_portal_meta( $portal_id, $meta_key, $meta_value, $unique = true ) {
+        return add_metadata( 'webtechglobal_portal', $portal_id, $meta_key, $meta_value, $unique );    
+    }
+    
+    /**
+    * Update portal meta data.
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function update_portal_meta( $portal_id, $meta_key, $meta_value, $previous_value = null ) {
+        return update_metadata( 'webtechglobal_portal', $portal_id, $meta_key, $meta_value, $previous_value );
+    }
+    
+    /**
+    * Update giving portals forum settings i.e. specific forum ID
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function update_portals_forumsettings( $portal_id, $portal_switch, $main_forum_id ) {
+        $meta_value_array = array(
+            'portal_switch' => $portal_switch,
+            'main_forum_id' => $main_forum_id
+        );
+        return update_metadata( 'webtechglobal_portal', $portal_id, 'forumsettings', $meta_value_array );    
+    }
+    
+    /**
+    * Gets a meta value from the portal meta table.
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function get_portal_meta( $portal_id, $meta_key, $single = true ) {
+        return get_metadata( 'webtechglobal_portal', $portal_id, $meta_key, $single );
+    }
+             
 }// end WTGPORTALMANAGER class 
 
 if(!class_exists( 'WP_List_Table' ) ){

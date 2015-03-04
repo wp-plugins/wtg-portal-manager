@@ -22,22 +22,7 @@ class WTGPORTALMANAGER_TabMenu {
         $menu_array['main']['title'] = 'Dashboard';// title at the top of the admin page
         $menu_array['main']['parent'] = 'parent';// either "parent" or the name of the parent - used for building tab menu         
         $menu_array['main']['tabmenu'] = false;// boolean - true indicates multiple pages in section, false will hide tab menu and show one page 
-        
-        ######################################################
-        #                                                    #
-        #                   PLUGIN UPDATE                    #
-        #                                                    #
-        ######################################################
-        // requests user to initiate plugin update
-        $menu_array['pluginupdate']['groupname'] = 'installation';        
-        $menu_array['pluginupdate']['slug'] = 'wtgportalmanager_pluginupdate';// home page slug set in main file
-        $menu_array['pluginupdate']['menu'] = __( 'WTG Portal Manager Update Ready', 'wtgportalmanager' );// plugin admin menu
-        $menu_array['pluginupdate']['pluginmenu'] = __( 'Update Information' ,'wtgportalmanager' );// for tabbed menu
-        $menu_array['pluginupdate']['name'] = "pluginupdate";// name of page (slug) and unique
-        $menu_array['pluginupdate']['title'] = __( 'Update Ready', 'wtgportalmanager' );// title at the top of the admin page
-        $menu_array['pluginupdate']['parent'] = 'parent';// either "parent" or the name of the parent - used for building tab menu 
-        $menu_array['pluginupdate']['tabmenu'] = false;
-        
+                
         ######################################################
         #                                                    #
         #                  BUILD SECTION                     #
@@ -113,15 +98,35 @@ class WTGPORTALMANAGER_TabMenu {
         #                      CONTENT                       #
         #                                                    #
         ######################################################            
-        // Updates - intended for general updates by web master and developers
+        // Sources - setup data sources for using on Updates, Activity and in the sidebars of other pages
+        $menu_array['contentsources']['groupname'] = 'publishsection';
+        $menu_array['contentsources']['slug'] = 'wtgportalmanager_contentsources'; 
+        $menu_array['contentsources']['menu'] = __( 'Content', 'wtgportalmanager' );
+        $menu_array['contentsources']['pluginmenu'] = __( 'Content Sources', 'wtgportalmanager' );
+        $menu_array['contentsources']['name'] = "contentsources";
+        $menu_array['contentsources']['title'] = __( 'Content Sources', 'wtgportalmanager' ); 
+        $menu_array['contentsources']['parent'] = 'parent'; 
+        $menu_array['contentsources']['tabmenu'] = true;
+                
+        // Updates - admin/developer only updates
         $menu_array['contentupdates']['groupname'] = 'publishsection';
         $menu_array['contentupdates']['slug'] = 'wtgportalmanager_contentupdates'; 
-        $menu_array['contentupdates']['menu'] = __( 'Content', 'wtgportalmanager' );
-        $menu_array['contentupdates']['pluginmenu'] = __( 'Updates', 'wtgportalmanager' );
+        $menu_array['contentupdates']['menu'] = __( 'Updates Page', 'wtgportalmanager' );
+        $menu_array['contentupdates']['pluginmenu'] = __( 'Updates Page', 'wtgportalmanager' );
         $menu_array['contentupdates']['name'] = "contentupdates";
-        $menu_array['contentupdates']['title'] = __( 'Updates', 'wtgportalmanager' ); 
-        $menu_array['contentupdates']['parent'] = 'parent'; 
+        $menu_array['contentupdates']['title'] = __( 'Updates Page', 'wtgportalmanager' ); 
+        $menu_array['contentupdates']['parent'] = 'contentsources'; 
         $menu_array['contentupdates']['tabmenu'] = true;
+
+        // Activity - including user/fan activity i.e. none admin post in forum, facebook Likes, re-tweets
+        $menu_array['contentactivity']['groupname'] = 'publishsection';
+        $menu_array['contentactivity']['slug'] = 'wtgportalmanager_contentactivity'; 
+        $menu_array['contentactivity']['menu'] = __( 'Recent Activity Page', 'wtgportalmanager' );
+        $menu_array['contentactivity']['pluginmenu'] = __( 'Recent Activity Page', 'wtgportalmanager' );
+        $menu_array['contentactivity']['name'] = "contentactivity";
+        $menu_array['contentactivity']['title'] = __( 'Recent Activity Page', 'wtgportalmanager' ); 
+        $menu_array['contentactivity']['parent'] = 'contentsources'; 
+        $menu_array['contentactivity']['tabmenu'] = true;
                 
         // FAQ - basic FAQ manager with option of integration with WTG Question and Answers for a more advanced system that leads to an automatically managed list of FAQ.
         /*

@@ -85,6 +85,15 @@ This method is safer than using any other source for the files.
 
 == Changelog == 
 
+= 0.0.7 =
+* Feature Changes    
+    * Updates page shortcode can now list phpBB forum activity  (see CSV 2 POST portal for it in action)
+    * Updates page shortcode can now list WordPress posts for a specific blog category (see CSV 2 POST portal for it in action)
+* Technical Information
+    * Correction in main file and plugin folder naming which fixes CSS issue.
+* Known Issues
+    * None
+    
 = 0.0.6 =
 * Feature Changes    
     * None

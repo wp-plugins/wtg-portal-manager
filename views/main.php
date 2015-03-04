@@ -55,13 +55,14 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
             array( 'main-currentportal', __( 'Current Portal Selection', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'currentportal' ), true, 'activate_plugins' ),
             array( 'main-createsidebar', __( 'Create Sidebar', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'createsidebar' ), true, 'activate_plugins' ),
             array( 'main-sidebarlist', __( 'Sidebar List', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'sidebarlist' ), true, 'activate_plugins' ),
-            
+            array( 'main-configureforum', __( 'Configure Forum', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'configureforum' ), true, 'activate_plugins' ),
+            array( 'main-setupdefaulttwitter', __( 'Default Twitter API Credentials', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'setupdefaulttwitter' ), true, 'activate_plugins' ),          
+
             // WTG core settings       
             array( 'main-globalswitches', __( 'Global Switches', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'globalswitches' ), true, 'activate_plugins' ),
             array( 'main-logsettings', __( 'Log Settings', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'logsettings' ), true, 'activate_plugins' ),
             array( 'main-pagecapabilitysettings', __( 'Page Capability Settings', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'pagecapabilitysettings' ), true, 'activate_plugins' ),
-            array( 'main-setupdefaulttwitter', __( 'Twitter API', 'wtgportalmanager' ), array( $this, 'parent' ), 'normal','default',array( 'formid' => 'setupdefaulttwitter' ), true, 'activate_plugins' ),          
-            
+           
             // information and social
             array( 'main-twitterupdates', __( 'Twitter', 'wtgportalmanager' ), array( $this, 'parent' ), 'side','default',array( 'formid' => 'twitterupdates' ), true, 'activate_plugins' ),
             array( 'main-facebook', __( 'Facebook', 'wtgportalmanager' ), array( $this, 'parent' ), 'side','default',array( 'formid' => 'facebook' ), true, 'activate_plugins' ),
@@ -998,8 +999,26 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
     public function postbox_main_setupdefaulttwitter( $data, $box ) { 
         $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], __( 'Activate API is required but the fields for a default set of app keys and tokens are not. You may enter an app account on a per portal basis.', 'wtgportalmanager' ), false );        
         $this->Forms->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );
-
+       
         global $wtgportalmanager_settings;
+        
+        if (defined('WTG_USING_EXISTING_LIBRARY_TWITTEROAUTH') && WTG_USING_EXISTING_LIBRARY_TWITTEROAUTH) {
+            $reflector = new ReflectionClass('TwitterOAuth');
+            $file = $reflector->getFileName();
+      
+            echo '<div id="message" class="error"><p><strong>oAuth Twitter Feed for Developers</strong> is using an existing version of the TwitterOAuth class library to provide compatibility with existing plugins.<br />This could lead to conflicts if the plugin is using an different version of the class.</p><p>The class is being loaded at <strong>'.$file.'</strong></p></div>';
+        }
+      
+        if (defined('WTG_USING_EXISTING_LIBRARY_OAUTH') && WTG_USING_EXISTING_LIBRARY_OAUTH) {
+            $reflector = new ReflectionClass('OAuthConsumer');
+            $file = $reflector->getFileName();
+            
+            echo '<div id="message" class="error"><p><strong>oAuth Twitter Feed for Developers</strong> is using an existing version of the PHP OAuth library to provide compatibility with existing plugins or your PHP installation.<br />This could lead to conflicts if the plugin, or your PHP installed class is using an different version of the class.</p><p>The class is being loaded at <strong>'.$file.'</strong></p></div>';
+        }
+      
+        echo '<p>Configure an app here <a href="https://apps.twitter.com/">http://apps.twitter.com</a>. You don\'t need to set a callback location, you only need read access and you will need to generate an oAuth token once you\'ve created the application.</p>';
+
+        echo '<hr />';
         ?>  
 
             <table class="form-table">
@@ -1033,7 +1052,58 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
             ?>
 
             </table>
+            
         <?php 
-        $this->UI->postbox_content_footer( 'Update API Status' );
-    }     
+        $this->UI->postbox_content_footer();
+                    
+        echo '<hr />';
+        
+        echo '<h3>Debug Information</h3>';
+        $last_error = __( 'no error has been stored.', 'wtgportalmanager' );
+        if( isset( $wtgportalmanager_settings['api']['twitter']['apps']['deafault']['error'] ) ) 
+        {
+            $last_error = $wtgportalmanager_settings['api']['twitter']['apps']['deafault']['error'];   
+        }
+        else
+        {
+            $last_error = __( 'The current portals API credentials have never led to an error.', 'wtgportalmanager' );
+        } 
+        
+        echo '<p>Last Twitter API Error: ' . $last_error . '</p>';                         
+    }    
+    
+    /**
+    * Bridge to a phpBB forum (WTG provides service to customize for other forum types) 
+    * 
+    * @author Ryan Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function postbox_main_configureforum( $data, $box ) { 
+        $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], __( 'Use this form if your domain is home to a forum and you want your portals to display forum activity. This plugin is phpBB 3.1 ready - support for other forums is planned. Using this form will automatically store some of the configuration data of your forum in WordPress to make a proper connection between the two platforms.', 'wtgportalmanager' ), false );        
+        $this->Forms->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );
+        
+        global $wtgportalmanager_settings;
+        ?>  
+
+            <table class="form-table">
+            
+            <?php 
+            $current_forum_switch = null;
+            if( isset( $wtgportalmanager_settings['forumconfig']['status'] ) ) { $current_forum_switch = $wtgportalmanager_settings['forumconfig']['status']; }
+            $this->Forms->switch_basic( $box['args']['formid'], 'globalforumswitch', 'globalforumswitch', __( 'Global Forum Switch', 'wtgportalmanager' ), 'disabled', $current_forum_switch, false ); 
+            ?>
+                                          
+            <?php  
+            $current_forum_path = ABSPATH;
+            if( isset( $wtgportalmanager_settings['forumconfig']['path'] ) ) { $current_forum_path = $wtgportalmanager_settings['forumconfig']['path']; }
+            $this->Forms->text_basic( $box['args']['formid'], 'forumpath', 'forumpath', __( 'Forums Path', 'wtgportalmanager' ), $current_forum_path, true, array() );
+            ?>
+
+            </table>
+            
+        <?php 
+        $this->UI->postbox_content_footer();                      
+    }       
 }?>

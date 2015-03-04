@@ -42,10 +42,10 @@ class WTGPORTALMANAGER_Requests {
         $this->Forms = $this->WTGPORTALMANAGER->load_class( 'WTGPORTALMANAGER_Formbuilder', 'class-forms.php', 'classes' );
         $this->WPCore = $this->WTGPORTALMANAGER->load_class( 'WTGPORTALMANAGER_WPCore', 'class-wpcore.php', 'classes' );
         $this->TabMenu = $this->WTGPORTALMANAGER->load_class( "WTGPORTALMANAGER_TabMenu", "class-pluginmenu.php", 'classes','pluginmenu' );   
+        $this->PHPBB = $this->WTGPORTALMANAGER->load_class( "WTGPORTALMANAGER_PHPBB", "class-phpbb.php", 'classes','pluginmenu' );   
         
         // set current active portal
-        if(!defined( "WTGPORTALMANAGER_CURRENT" ) ){define( "WTGPORTALMANAGER_CURRENT", $this->WTGPORTALMANAGER->get_active_portal_id() );}
-                         
+        if(!defined( "WTGPORTALMANAGER_ADMINCURRENT" ) ){define( "WTGPORTALMANAGER_ADMINCURRENT", $this->WTGPORTALMANAGER->get_active_portal_id() );}                
     }
     
     /**
@@ -61,7 +61,7 @@ class WTGPORTALMANAGER_Requests {
     */
     public function process_admin_request() { 
         $method = 'post';// post or get
-         
+
         // ensure processing requested
         // if a hacker changes this, no processing happens so no validation required
         if(!isset( $_POST['wtgportalmanager_admin_action'] ) && !isset( $_GET['wtgportalmanageraction'] ) ) {
@@ -131,7 +131,7 @@ class WTGPORTALMANAGER_Requests {
         // all security passed - call the processing function
         if( isset( $function_name) && is_string( $function_name ) ) {
             eval( 'self::' . $function_name .'();' );
-        }
+        }          
     }  
 
     /**
@@ -505,8 +505,7 @@ class WTGPORTALMANAGER_Requests {
     * @version 1.0
     */
     public function createportal() {
-
-  
+   
         // build optional fields array (pages, blog category, forum ID etc)
         $optional_fields = array();
         $optional_fields['newportalmainpageid'] = $_POST['newportalmainpageid'];
@@ -604,7 +603,7 @@ class WTGPORTALMANAGER_Requests {
     * @version 1.0
     */
     public function addcategories() {
-        $this->WTGPORTALMANAGER->add_portal_subcategory( $this->WTGPORTALMANAGER->get_active_portal_id(), $_POST['selectedsubcategoryAlan'] );
+        $this->WTGPORTALMANAGER->add_portal_subcategory( $this->WTGPORTALMANAGER->get_active_portal_id(), $_POST['selectedsubcategory'] );
         $this->UI->create_notice( __( "The new category is now available within your portal.", 'wtgportalmanager' ), 'success', 'Small', __( 'Category Added', 'wtgportalmanager' ) );
     }
 
@@ -713,16 +712,104 @@ class WTGPORTALMANAGER_Requests {
     * @version 1.0
     */
     public function setupportaltwitter() {
-        global $wtgportalmanager_settings;
-
-        $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_CURRENT]['consumer_key'] = $_POST['consumer_key'];
-        $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_CURRENT]['consumer_secret'] = $_POST['consumer_secret'];
-        $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_CURRENT]['access_token'] = $_POST['access_token'];
-        $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_CURRENT]['token_secret'] = $_POST['access_token_secret'];
-        $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_CURRENT]['screenname'] = $_POST['screenname'];
-  
-        $this->WTGPORTALMANAGER->update_settings( $wtgportalmanager_settings );    
+        $this->WTGPORTALMANAGER->update_portals_twitter_api( $portal_id, $_POST['consumer_key'], $_POST['consumer_secret'], $_POST['access_token'], $_POST['access_token_secret'], $_POST['screenname'] );    
         $this->UI->create_notice( __( "You have updated the current portals Twitter App account.", 'wtgportalmanager' ), 'success', 'Small', __( 'Portals Twitter Updated', 'wtgportalmanager' ) );       
     }
+    
+    /**
+    * Saves global forum configuration.
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function configureforum() {
+        global $wtgportalmanager_settings;
+        
+        // sanitize path
+        $forum_path_modified = sanitize_text_field( $_POST['forumpath'] );
+        $forum_path_modified = stripslashes_deep( $forum_path_modified );        
+        $forum_path_modified = trailingslashit( $forum_path_modified );
+        
+        // now determine if phpBB actually exists 
+        $does_phpbb_exist = $this->PHPBB->phpbb_exists( $forum_path_modified );
+        if( !$does_phpbb_exist ) {
+            $this->UI->create_notice( __( "Your forum installation could not be located on the path you gave. Please ensure your forum is supported and remember to visit the forum for advice.", 'wtgportalmanager' ), 'success', 'Small', __( 'Forum Not Found', 'wtgportalmanager' ) );       
+            return;    
+        }
+        
+        // include the phpBB config file - we need database prefix for queries
+        require( $forum_path_modified . 'config.php' );
+        
+        // add config to settings
+        $wtgportalmanager_settings['forumconfig']['path'] = $forum_path_modified;
+        $wtgportalmanager_settings['forumconfig']['status'] = $_POST['globalforumswitch'];
+        $wtgportalmanager_settings['forumconfig']['tableprefix'] = $table_prefix;
+        $wtgportalmanager_settings['forumconfig']['admrelativepath'] = $phpbb_adm_relative_path;
+        $wtgportalmanager_settings['forumconfig']['phpbbversion'] =  $this->PHPBB->version();
+         
+        // ensure compatible phpBB version installed
+        if( $wtgportalmanager_settings['forumconfig']['phpbbversion'] < '3.1' ) { 
+            $this->UI->create_notice( __( "This plugin does not support your current phpBB version which is " . $wtgportalmanager_settings['forumconfig']['phpbbversion'], 'wtgportalmanager' ), 'success', 'Small', __( 'Forum Version Not Supported', 'wtgportalmanager' ) );
+            return;
+        }
+        
+        $this->WTGPORTALMANAGER->update_settings( $wtgportalmanager_settings );
+        
+        $this->UI->create_notice( __( "You have saved your forums configuration and can now begin displaying forum data in your portals.", 'wtgportalmanager' ), 'success', 'Small', __( 'Forum Configuration Saved', 'wtgportalmanager' ) );       
+    }
+    
+    /**
+    * Handle request to save the main forum settings for the current portal.
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function setupportalforum() {
+        $got_forum_row = $this->PHPBB->get_forum( $_POST['mainforumid'] );
+        
+        // ensure forum ID is valid (numeric validation already done before arriving here using my own security approach)
+        if( !$got_forum_row || empty( $got_forum_row ) ) {
+            $this->UI->create_notice( __( "The forum ID you entered does not match any forums in your phpBB database. Nothing was saved, please try again.", 'wtgportalmanager' ), 'error', 'Small', __( 'Forum Not Found', 'wtgportalmanager' ) );                           
+            return;    
+        }
+        
+        $this->WTGPORTALMANAGER->update_portals_forumsettings( WTGPORTALMANAGER_ADMINCURRENT, $_POST['portalforumswitch'], $_POST['mainforumid'] );
+        $this->UI->create_notice( __( "You have saved your portals forum settings. If you set the switch to enabled then the next step is to ensure your portal is displaying information using forum data.", 'wtgportalmanager' ), 'success', 'Small', __( 'Forum Settings Saved', 'wtgportalmanager' ) );                       
+    }
+    
+    /**
+    * Handles request from form for selecting portals sources of information
+    * for display on the Updates page.
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function selectupdatesources() {
+        global $wtgportalmanager_settings;        
+        $this->WTGPORTALMANAGER->update_portal_meta( WTGPORTALMANAGER_ADMINCURRENT, 'updatepagesources', $_POST['informationsources'] );
+        $this->UI->create_notice( __( "Sources of information for your Updates page were saved. You should check your current portals Updates page and ensure it is displaying what you expect.", 'wtgportalmanager' ), 'success', 'Small', __( 'Update Sources Saved', 'wtgportalmanager' ) );                               
+    }
+    
+    /**
+    * Handles request of selecting portals sources of information
+    * for display on the Activity page.
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function selectactivitysources() {
+        global $wtgportalmanager_settings;        
+        $this->WTGPORTALMANAGER->update_portal_meta( WTGPORTALMANAGER_ADMINCURRENT, 'activitypagesources', $_POST['informationsources'] );
+        $this->UI->create_notice( __( "Sources of information for your Activity page were saved. You should check your current portals Updates page and ensure it is displaying what you expect.", 'wtgportalmanager' ), 'success', 'Small', __( 'Activity Sources Saved', 'wtgportalmanager' ) );                               
+    }
+        
 }// WTGPORTALMANAGER_Requests       
 ?>
