@@ -85,6 +85,14 @@ This method is safer than using any other source for the files.
 
 == Changelog == 
 
+= 0.0.8 =
+* Feature Changes    
+    * None
+* Technical Information
+    * Bug fixed - User ID and Portal ID had been swapped when updating current active portal in admin, which prevents admin being used.
+* Known Issues
+    * None
+    
 = 0.0.7 =
 * Feature Changes    
     * Updates page shortcode can now list phpBB forum activity  (see CSV 2 POST portal for it in action)

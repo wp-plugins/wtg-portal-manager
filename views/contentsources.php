@@ -70,7 +70,7 @@ class WTGPORTALMANAGER_Contentsources_View extends WTGPORTALMANAGER_View {
         $this->UI = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_UI', 'class-ui.php', 'classes' );  
         $this->DB = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_DB', 'class-wpdb.php', 'classes' );
         $this->PHP = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_PHP', 'class-phplibrary.php', 'classes' );
-        $this->Forms = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_Formbuilder', 'class-forms.php', 'classes' );
+        $this->FORMS = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_Formbuilder', 'class-forms.php', 'classes' );
         
         // we have the ability to pass arguments to this, it is optional
         $this->TWITTER = $this->WTGPORTALMANAGER->load_class( "WTGPORTALMANAGER_Twitter", "class-twitter.php", 'classes' );
@@ -137,7 +137,7 @@ class WTGPORTALMANAGER_Contentsources_View extends WTGPORTALMANAGER_View {
     */
     public function postbox_contentsources_setupportaltwitter( $data, $box ) {                                
         $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], __( 'Configure a new Twitter app so that you can include tweets on the Updates and Activity pages.', 'wtgportalmanager' ), false );        
-        $this->Forms->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );
+        $this->FORMS->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );
 
         global $wtgportalmanager_settings;
                                                                                                        
@@ -164,23 +164,23 @@ class WTGPORTALMANAGER_Contentsources_View extends WTGPORTALMANAGER_View {
             <?php        
             $twitter_consumer_key = '';       
             if( isset( $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['consumer_key'] ) ) { $twitter_consumer_key = $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['consumer_key']; }
-            $this->Forms->text_basic( $box['args']['formid'], 'consumer_key', 'consumer_key', 'Consumer Key (API Key)', $twitter_consumer_key, true, array( 'alphanumeric' ) );
+            $this->FORMS->text_basic( $box['args']['formid'], 'consumer_key', 'consumer_key', 'Consumer Key (API Key)', $twitter_consumer_key, true, array( 'alphanumeric' ) );
             
             $twitter_consumer_secret = '';
             if( isset( $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['consumer_secret'] ) ) { $twitter_consumer_secret = $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['consumer_secret']; }            
-            $this->Forms->text_basic( $box['args']['formid'], 'consumer_secret', 'consumer_secret', 'Consumer Secret (API Secret)', $twitter_consumer_secret, true, array( 'alphanumeric' ) );
+            $this->FORMS->text_basic( $box['args']['formid'], 'consumer_secret', 'consumer_secret', 'Consumer Secret (API Secret)', $twitter_consumer_secret, true, array( 'alphanumeric' ) );
             
             $twitter_access_token = '';
             if( isset( $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['access_token'] ) ) { $twitter_access_token = $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['access_token']; }            
-            $this->Forms->text_basic( $box['args']['formid'], 'access_token', 'access_token', 'Your Access Token', $twitter_access_token, true, array( 'alphanumeric' ) );
+            $this->FORMS->text_basic( $box['args']['formid'], 'access_token', 'access_token', 'Your Access Token', $twitter_access_token, true, array( 'alphanumeric' ) );
             
             $twitter_token_secret = '';
             if( isset( $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['token_secret'] ) ) { $twitter_token_secret = $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['token_secret']; }            
-            $this->Forms->text_basic( $box['args']['formid'], 'access_token_secret', 'access_token_secret', 'Access Token Secret', $twitter_token_secret, true, array( 'alphanumeric' ) );
+            $this->FORMS->text_basic( $box['args']['formid'], 'access_token_secret', 'access_token_secret', 'Access Token Secret', $twitter_token_secret, true, array( 'alphanumeric' ) );
             
             $twitter_screenname = '';
             if( isset( $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['screenname'] ) ) { $twitter_screenname = $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['screenname']; }            
-            $this->Forms->text_basic( $box['args']['formid'], 'screenname', 'screenname', 'Twitter Feed Screen Name', $twitter_screenname, false, array( 'alphanumeric' ) );
+            $this->FORMS->text_basic( $box['args']['formid'], 'screenname', 'screenname', 'Twitter Feed Screen Name', $twitter_screenname, false, array( 'alphanumeric' ) );
             ?>
             </table>
 
@@ -213,27 +213,28 @@ class WTGPORTALMANAGER_Contentsources_View extends WTGPORTALMANAGER_View {
     */
     public function postbox_contentsources_setupportalforum( $data, $box ) {                                
         $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], __( 'Encourage traffic between your portal and forum by displaying data in your forum database on the portal. This form is to configure the bridge between WP and your forum. To apply the changes to your current portal go to the Updates Page and Recent Activty Page tabs.', 'wtgportalmanager' ), false );        
-        $this->Forms->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );
+        $this->FORMS->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );
         
         global $wtgportalmanager_settings;
         
-        if( !isset( $wtgportalmanager_settings['forumconfig']['status'] ) ) 
+        if( !isset( $wtgportalmanager_settings['forumconfig']['status'] ) || $wtgportalmanager_settings['forumconfig']['status'] !== 'enabled' ) 
         {
-            $this->UI->notice_return( 'warning', 'Tiny', __( 'Forum Not Configured', 'wtgportalmanager' ), __( 'Only the status setting is checked. If you have previously configured your forum. You may still need to activate it on this plugins dashboard.', 'wtgportalmanager' ), false, true );         
+            echo $this->UI->notice_return( 'info', 'Tiny', __( 'Forum Not Ready', 'wtgportalmanager' ), __( 'Global forum settings have not been configured on the plugins dashboard OR the settings are set to Disabled. Go to the plugins dashboard an enable forum activity. Then continue configuring your portals individually.', 'wtgportalmanager' ), false, true );         
         }
         else
         {
-            $portal_meta_array = $this->WTGPORTALMANAGER->get_portal_meta( WTGPORTALMANAGER_ADMINCURRENT, 'forumsettings' );?>  
-
+            $portal_meta_array = $this->WTGPORTALMANAGER->get_portal_meta( WTGPORTALMANAGER_ADMINCURRENT, 'forumsettings' );
+            ?>  
+                
             <table class="form-table">                  
             <?php 
             $current_forum_switch = null;
             if( isset( $portal_meta_array['portal_switch'] ) ) { $current_forum_switch = $portal_meta_array['portal_switch']; }
-            $this->Forms->switch_basic( $box['args']['formid'], 'portalforumswitch', 'portalforumswitch', __( 'Portal Forum Switch', 'wtgportalmanager' ), 'disabled', $current_forum_switch, false ); 
+            $this->FORMS->switch_basic( $box['args']['formid'], 'portalforumswitch', 'portalforumswitch', __( 'Portal Forum Switch', 'wtgportalmanager' ), 'disabled', $current_forum_switch, false ); 
             
             $current_mainforumid = '';
             if( isset( $portal_meta_array['main_forum_id'] ) ) { $current_mainforumid = $portal_meta_array['main_forum_id']; }
-            $this->Forms->text_basic( $box['args']['formid'], 'mainforumid', 'mainforumid', __( 'Main Forum ID', 'wtgportalmanager' ), $current_mainforumid, true, array( 'numeric' ) );
+            $this->FORMS->text_basic( $box['args']['formid'], 'mainforumid', 'mainforumid', __( 'Main Forum ID', 'wtgportalmanager' ), $current_mainforumid, true, array( 'numeric' ) );
             ?>
             </table>
 

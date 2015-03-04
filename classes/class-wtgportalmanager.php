@@ -183,15 +183,12 @@ class WTGPORTALMANAGER {
     public function portal_updates_shortcode( $atts ) {
         global $wtgportalmanager_settings;
 
-        // default output for when no updates are found or there is a critical issue
-        $noupdates_output = "<p>There are no updates for this portal.</p>";             
-
         // get the current portals meta value for "updatepagesources" - it should return an array of applied data sources             
         $sources_array = self::get_portal_meta( WTGPORTALMANAGER_PUBLICPORTALID, 'updatepagesources' );
         
         // we cant continue if no sources are setup for the update page, it's partly a security issue and to avoid a lot of errors
         if( !is_array( $sources_array ) ) {
-            echo $noupdates_output;
+            echo "<p>This page is not fully configured to display updates yet...maybe the webmaster forgot! Someone please remind them. </p>";
             return;    
         }
                 

@@ -153,8 +153,9 @@ class WTGPORTALMANAGER_Contentupdates_View extends WTGPORTALMANAGER_View {
         $this->FORMS->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );
 
         global $wtgportalmanager_settings;
-        ?>  
 
+        ?>  
+            
             <table class="form-table">                  
             <?php
             $items_array = array( 'twitter' => 'Twitter', 'facebook' => 'Facebook', 'forum' => __( 'Forum (by admin only)', 'wtgportalmanager' ), 'blogposts' => __( 'Blog Posts (by admin only)', 'wtgportalmanager' ), 'newversions' => __( 'New Versions', 'wtgportalmanager' ), 'pricedrop' => __( 'Price Drop', 'wtgportalmanager' ), 'newtasks' => __( 'New Tasks', 'wtgportalmanager' ) );
@@ -166,6 +167,7 @@ class WTGPORTALMANAGER_Contentupdates_View extends WTGPORTALMANAGER_View {
             </table>
 
         <?php 
+        
         $this->UI->postbox_content_footer();                  
     }   
  

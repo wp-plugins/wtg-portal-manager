@@ -538,7 +538,7 @@ class WTGPORTALMANAGER_Requests {
     * @version 1.0
     */
     public function currentportal() {
-        $this->WTGPORTALMANAGER->activate_portal( get_current_user_id(), $_POST['portalactivation'] ); 
+        $this->WTGPORTALMANAGER->activate_portal( $_POST['portalactivation'], get_current_user_id() ); 
         $this->UI->create_notice( __( "You activated portal with ID " . $_POST['portalactivation'] . " and when using this plugins other views that is the portal you will be viewing/editing.", 'wtgportalmanager' ), 'success', 'Small', __( 'Portal Activated', 'wtgportalmanager' ) );                                              
     }
     
