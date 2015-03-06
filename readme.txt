@@ -85,6 +85,15 @@ This method is safer than using any other source for the files.
 
 == Changelog == 
 
+= 0.0.9 =
+* Feature Changes    
+    * None
+* Technical Information
+    * Updates Page Shortcode: results are cached per source, this is to allow different sources to have different expiry times
+    * Updates Page Shortcode: entire results are cached to prevent page refresh causing flooding
+* Known Issues
+    * None
+    
 = 0.0.8 =
 * Feature Changes    
     * None

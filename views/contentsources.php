@@ -158,28 +158,30 @@ class WTGPORTALMANAGER_Contentsources_View extends WTGPORTALMANAGER_View {
         echo '<p>Configure an app here <a href="https://apps.twitter.com/">http://apps.twitter.com</a>. You don\'t need to set a callback location, you only need read access and you will need to generate an oAuth token once you\'ve created the application.</p>';
 
         echo '<hr />';
+        
+        $portals_twitter_array = $this->WTGPORTALMANAGER->get_portal_meta( WTGPORTALMANAGER_ADMINCURRENT, 'twitterapi', true );
         ?>  
 
             <table class="form-table">                  
-            <?php        
+            <?php                 
             $twitter_consumer_key = '';       
-            if( isset( $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['consumer_key'] ) ) { $twitter_consumer_key = $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['consumer_key']; }
+            if( isset( $portals_twitter_array['consumer_key'] ) ) { $twitter_consumer_key = $portals_twitter_array['consumer_key']; }
             $this->FORMS->text_basic( $box['args']['formid'], 'consumer_key', 'consumer_key', 'Consumer Key (API Key)', $twitter_consumer_key, true, array( 'alphanumeric' ) );
             
             $twitter_consumer_secret = '';
-            if( isset( $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['consumer_secret'] ) ) { $twitter_consumer_secret = $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['consumer_secret']; }            
+            if( isset( $portals_twitter_array['consumer_secret'] ) ) { $twitter_consumer_secret = $portals_twitter_array['consumer_secret']; }            
             $this->FORMS->text_basic( $box['args']['formid'], 'consumer_secret', 'consumer_secret', 'Consumer Secret (API Secret)', $twitter_consumer_secret, true, array( 'alphanumeric' ) );
             
             $twitter_access_token = '';
-            if( isset( $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['access_token'] ) ) { $twitter_access_token = $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['access_token']; }            
+            if( isset( $portals_twitter_array['access_token'] ) ) { $twitter_access_token = $portals_twitter_array['access_token']; }            
             $this->FORMS->text_basic( $box['args']['formid'], 'access_token', 'access_token', 'Your Access Token', $twitter_access_token, true, array( 'alphanumeric' ) );
             
             $twitter_token_secret = '';
-            if( isset( $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['token_secret'] ) ) { $twitter_token_secret = $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['token_secret']; }            
+            if( isset( $portals_twitter_array['token_secret'] ) ) { $twitter_token_secret = $portals_twitter_array['token_secret']; }            
             $this->FORMS->text_basic( $box['args']['formid'], 'access_token_secret', 'access_token_secret', 'Access Token Secret', $twitter_token_secret, true, array( 'alphanumeric' ) );
             
             $twitter_screenname = '';
-            if( isset( $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['screenname'] ) ) { $twitter_screenname = $wtgportalmanager_settings['api']['twitter']['apps'][WTGPORTALMANAGER_ADMINCURRENT]['screenname']; }            
+            if( isset( $portals_twitter_array['screenname'] ) ) { $twitter_screenname = $portals_twitter_array['screenname']; }            
             $this->FORMS->text_basic( $box['args']['formid'], 'screenname', 'screenname', 'Twitter Feed Screen Name', $twitter_screenname, false, array( 'alphanumeric' ) );
             ?>
             </table>

@@ -39,6 +39,7 @@ class WTGPORTALMANAGER_Twitter {
     public $st_last_error = false;
 
     function __construct( $args = array() ) {
+
         // if WTGPORTALMANAGER_Twitter is loaded without the last parameter it will result in $args == null
         if( $args === null ){ $args = array(); }
         $this->defaults = array_merge($this->defaults, $args);
@@ -63,11 +64,12 @@ class WTGPORTALMANAGER_Twitter {
     * @param mixed $user_timeline over-rides all other settings, pass false to let the plugin do its more dynamic thing
     * @param mixed $count
     * @param mixed $options
-    * @param mixed $application
+    * @param mixed $application should be the portal ID in this plugin
     */
     public function startTwitter( $user_timeline = false, $count = 20, $options = false, $application = 'default' ) {
         global $wtgportalmanager_settings;
-
+        $this->WTGPORTALMANAGER = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER', 'class-wtgportalmanager.php', 'classes' ); # plugin specific functions
+        
         $this->defaults['cache_expire'] = 3600;
         $this->defaults['directory'] = plugin_dir_path(__FILE__);
                       
@@ -76,21 +78,23 @@ class WTGPORTALMANAGER_Twitter {
             2. Might be able to use $options for a more multi-account approach.
             3. For my needs I want to pass a single value ($application) and dynamically retrieve accounts within this method. 
         */
-               
+                         
+        $portals_twitter_array = $this->WTGPORTALMANAGER->get_portal_meta( $application, 'twitterapi', true );
+                      
         // consumer key
-        $this->defaults['key'] = $wtgportalmanager_settings['api']['twitter']['apps'][ $application ]['consumer_key'];
+        $this->defaults['key'] = $portals_twitter_array['consumer_key'];
         if( !$this->defaults['key'] ) { return false; }
         
         // consumer secret
-        $this->defaults['secret'] = $wtgportalmanager_settings['api']['twitter']['apps'][$application]['consumer_secret'];
+        $this->defaults['secret'] = $portals_twitter_array['consumer_secret'];
         if( !$this->defaults['secret'] ) { return false; }
         
         // access token
-        $this->defaults['token'] = $wtgportalmanager_settings['api']['twitter']['apps'][$application]['access_token'];
+        $this->defaults['token'] = $portals_twitter_array['access_token'];
         if( !$this->defaults['token'] ) { return false; }
         
         // token secret
-        $this->defaults['token_secret'] = $wtgportalmanager_settings['api']['twitter']['apps'][$application]['token_secret'];
+        $this->defaults['token_secret'] = $portals_twitter_array['token_secret'];
         if( !$this->defaults['token_secret'] ) { return false; }
         
         // screen name i.e. WebTechGlobal
@@ -102,21 +106,20 @@ class WTGPORTALMANAGER_Twitter {
         else
         {
             $this->defaults['user_timeline'] = 'WebTechGlobal';
-            if( isset( $wtgportalmanager_settings['api']['twitter']['apps'][$application]['screenname'] ) )
+            if( isset( $portals_twitter_array['screenname'] ) )
             {
-                $this->defaults['user_timeline'] = $wtgportalmanager_settings['api']['twitter']['apps'][$application]['screenname'];   
+                $this->defaults['user_timeline'] = $portals_twitter_array['screenname'];   
             }
             elseif( $user_timeline !== false && is_string( $user_timeline ) )
             {
-                $this->defaults['user_timeline'] = $wtgportalmanager_settings['api']['twitter']['apps'][$application]['screenname'];
+                $this->defaults['user_timeline'] = $portals_twitter_array['screenname'];
             }                                                                  
         }
         
         $res = $this->getTweets( $this->defaults['user_timeline'], $count, $options );      
-   
+            
         // store error
         if( isset( $res['error'] ) && is_string( $res['error'] ) ) {
-            $this->WTGPORTALMANAGER = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER', 'class-wtgportalmanager.php', 'classes' ); # plugin specific functions
             $wtgportalmanager_settings['api']['twitter']['apps'][$application]['error'] = $res['error'];
             $this->WTGPORTALMANAGER->update_settings( $wtgportalmanager_settings );
         }
@@ -200,13 +203,26 @@ class WTGPORTALMANAGER_Twitter {
         return $hash;
     }
 
+    /**
+    * Establishes if valid Twitter results exist in cache.
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    * 
+    * @param mixed $screenname
+    * @param mixed $options
+    */
     private function checkValidCache($screenname,$options) {
+        // get cache file path (.tweetcache)
         $file = $this->getCacheLocation();
         if (is_file($file)) 
         {
             $cache = file_get_contents($file);
             $cache = @json_decode($cache,true);
 
+            // file empty do this
             if (!isset($cache)) {
                 unlink($file);
                 return false;

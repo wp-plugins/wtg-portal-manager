@@ -1,7 +1,7 @@
 <?php         
 /*
 Plugin Name: WTG Portal Manager Beta
-Version: 0.0.8
+Version: 0.0.9
 Plugin URI: http://www.webtechglobal.co.uk
 Description: Create many portals in one WordPress site that focus on individual products or services.
 Author: WebTechGlobal
@@ -38,12 +38,13 @@ if ( ( 'wp-login.php' === basename( $_SERVER['SCRIPT_FILENAME'] ) ) // Login scr
 }
               
 // package variables
-$c2p_currentversion = '0.0.8';# to be removed, version is now in the WTGPORTALMANAGER() class 
-$c2p_debug_mode = false;# to be phased out, going to use environment variables (both WP and php.ini instead)
+$wtgportalmanager_currentversion = '0.0.9';# to be removed, version is now in the WTGPORTALMANAGER() class 
+$wtgportalmanager_debug_mode = false;# to be phased out, going to use environment variables (both WP and php.ini instead)
+$wtgportalmanager_settings = get_option( 'wtgportalmanager_settings' );
 
 // go into dev mode if on test installation (if directory contains the string you will see errors and other fun stuff for geeks)               
 if( strstr( ABSPATH, 'wtgportalmanager' ) ){
-    $c2p_debug_mode = true;     
+    $wtgportalmanager_debug_mode = true;     
 }               
 
 // avoid error output here and there for the sake of performance...              
@@ -51,7 +52,7 @@ if ( ( 'wp-login.php' === basename( $_SERVER['SCRIPT_FILENAME'] ) )
         || ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST )
         || ( defined( 'DOING_CRON' ) && DOING_CRON )
         || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
-    $c2p_debug_mode = false;
+    $wtgportalmanager_debug_mode = false;
 }                   
 
 // define WebTechGlobal constants applicable to all projects...

@@ -108,8 +108,9 @@ class WTGPORTALMANAGER {
         $this->PHP = self::load_class( 'WTGPORTALMANAGER_PHP', 'class-phplibrary.php', 'classes' );
         $this->Install = self::load_class( 'WTGPORTALMANAGER_Install', 'class-install.php', 'classes' );
         $this->Files = self::load_class( 'WTGPORTALMANAGER_Files', 'class-files.php', 'classes' );
-        $this->PHPBB = self::load_class( "WTGPORTALMANAGER_PHPBB", "class-phpbb.php", 'classes','pluginmenu' );
         
+        // global settings are initialized in the main file
+        // however if the installations settings are missing this will install them
         $wtgportalmanager_settings = self::adminsettings();
   
         $this->add_actions();
@@ -182,7 +183,11 @@ class WTGPORTALMANAGER {
     */
     public function portal_updates_shortcode( $atts ) {
         global $wtgportalmanager_settings;
-
+        
+        // check for a cached list of items 
+        $cached_query = get_transient( 'wtgportalmanager_updatepage' );
+        if( $cached_query !== false ) { return $cached_query; }
+                 
         // get the current portals meta value for "updatepagesources" - it should return an array of applied data sources             
         $sources_array = self::get_portal_meta( WTGPORTALMANAGER_PUBLICPORTALID, 'updatepagesources' );
         
@@ -190,7 +195,7 @@ class WTGPORTALMANAGER {
         if( !is_array( $sources_array ) ) {
             echo "<p>This page is not fully configured to display updates yet...maybe the webmaster forgot! Someone please remind them. </p>";
             return;    
-        }
+        }       
                 
         // variable per source - set them all at once for a simplier argument later
         $twitter_status = false;
@@ -200,14 +205,14 @@ class WTGPORTALMANAGER {
         $newversions_status = false;
         $pricedrop_status = false;
         $newtasks_status = false;        
-            
+                         
         // set twitter status
         if( isset( $wtgportalmanager_settings['api']['twitter']['active'] ) && $wtgportalmanager_settings['api']['twitter']['active'] == 'enabled' ) {
             if( in_array( 'twitter', $sources_array ) ) {       
                 $twitter_status = true;
             }  
         }      
-        
+              
         // set facebook status
         
         // set forum (phpBB, possibly other forum software) status
@@ -216,7 +221,7 @@ class WTGPORTALMANAGER {
                 $forum_status = true;
             }    
         }
-           
+             
         // set blog posts status
         if( in_array( 'blogposts', $sources_array ) ) {
             $maincategory_id = self::get_portal_meta( WTGPORTALMANAGER_PUBLICPORTALID, 'maincategory', true );
@@ -240,9 +245,9 @@ class WTGPORTALMANAGER {
             $this->TWITTER = self::load_class( "WTGPORTALMANAGER_Twitter", "class-twitter.php", 'classes' );   
                       
             $result = $this->TWITTER->startTwitter( $atts['usertimeline'], 20, false, $atts['appaccount'] );// $username = false, $count = 20, $options = false, $application = 'default'         
-                
-            if( !isset( $result['error'] ) ) {     
-           
+                        
+            if( !isset( $result['error'] ) && is_array( $result ) ) {     
+                       
                 foreach( $result as $key => $item ) { 
                     
                     $date = new DateTime( $item['created_at'] );
@@ -259,7 +264,7 @@ class WTGPORTALMANAGER {
                 }
             }
         }   
-        
+              
         // add Facebook items 
         if( $facebook_status ) {
                  
@@ -268,9 +273,24 @@ class WTGPORTALMANAGER {
         // add Forum items
         if( $forum_status ) {    
             
-            $result = $this->PHPBB->get_posts_inrange_simple(); 
-             
-            if( $result ) {     
+            $this->PHPBB = self::load_class( "WTGPORTALMANAGER_PHPBB", "class-phpbb.php", 'classes','pluginmenu' );
+            
+            // check cache
+            $cached_query = get_transient( 'wtgportalmanager_updatepage_phpbb' );
+
+            if( $cached_query ) 
+            {
+                $result = $cached_query;
+            }
+            else
+            {
+                $result = $this->PHPBB->get_posts_inrange_simple( 0, 9999999999, null, null, 20 ); 
+                
+                // cache result 
+                set_transient( 'wtgportalmanager_updatepage_phpbb', $result, 600 );
+            }
+            
+            if( is_array( $result ) ) {     
                   
                 foreach( $result as $key => $item ) {    
        
@@ -289,16 +309,33 @@ class WTGPORTALMANAGER {
         // add WP posts as items
         if( $blogposts_status ) {
              
-            $args = array(
-                'posts_per_page'   => 20,
-                'category'         => $maincategory_id,
-                'post_type'        => 'post',
-                'post_status'      => 'publish',
-                'suppress_filters' => true 
-            );  
-                        
-            $result = get_posts( $args );
+            // check cache
+            $cached_query = get_transient( 'wtgportalmanager_updatepage_wpposts' );
+
+            // get data (cached or new query)
+            if( $cached_query ) 
+            {
+                $result = $cached_query;
+            }
+            else
+            {
+                $args = array(
+                    'posts_per_page'   => 20,
+                    'category'         => $maincategory_id,
+                    'post_type'        => 'post',
+                    'post_status'      => 'publish',
+                    'suppress_filters' => true 
+                );  
+                            
+                $result = get_posts( $args ); 
+                 
+                if( $result ) {
+                    // cache result 
+                    set_transient( 'wtgportalmanager_updatepage_wpposts', $result, 600 );
+                }
+            }
             
+            // add new blog posts as items in our list
             if( $result ) {     
                   
                 foreach( $result as $key => $item ) {    
@@ -307,7 +344,7 @@ class WTGPORTALMANAGER {
                     $new_item .= '<li><img src="' . WTGPORTALMANAGER_IMAGES_URL . '/logos/wordpress_logo_100x100.png">';
                     $new_item .= '<p>' . $item->post_date . '</p>';
                     $new_item .= '<br>';
-                    $new_item .= '<p>' . wp_trim_excerpt( $item->post_content ) . '</p>';
+                    $new_item .= '<p>' . $this->PHP->truncatestring( $item->post_content, 150 ) . '</p>';
                     $new_item .= '</li>';
                     
                     $html_wrapped_items_array[ strtotime( $item->post_date )  ] = $new_item;
@@ -346,7 +383,12 @@ class WTGPORTALMANAGER {
         $output .= '
             </ul>
         </div>';
-                        
+        
+        // cache our entire result to prevent refreshing of the updates page causing flooding
+        // with a cache per source it is less likely, however if enough sources are configured
+        // there is potential for the Updates page to be very demanding         
+        set_transient( 'wtgportalmanager_updatepage', $output, 60 );
+               
         return $output;
     }
         
@@ -938,8 +980,8 @@ class WTGPORTALMANAGER {
     * @version 1.0
     */
     public function debugmode() {
-        global $c2p_debug_mode;
-        if( $c2p_debug_mode){
+        global $wtgportalmanager_debug_mode;
+        if( $wtgportalmanager_debug_mode){
             global $wpdb;
             ini_set( 'display_errors',1);
             error_reporting(E_ALL);      
@@ -977,49 +1019,6 @@ class WTGPORTALMANAGER {
                 break;
         } 
         */
-    }
-    
-    /**
-    * Gets option value for wtgportalmanager _adminset or defaults to the file version of the array if option returns invalid.
-    * 1. Called in the main wtgportalmanager.php file.
-    * 2. Installs the admin settings option record if it is currently missing due to the settings being required by all screens, this is to begin applying and configuring settings straighta away for a per user experience 
-    */
-    public function adminsettings() {
-        $result = $this->option( 'wtgportalmanager_settings', 'get' );
-        $result = maybe_unserialize( $result); 
-        if(is_array( $result) ){
-            return $result; 
-        }else{     
-            return $this->install_admin_settings();
-        }  
-    }
-    
-    /**
-    * Control WordPress option functions using this single function.
-    * This function will give us the opportunity to easily log changes and some others ideas we have.
-    * 
-    * @param mixed $option
-    * @param mixed $action add, get, wtgget (own query function) update, delete
-    * @param mixed $value
-    * @param mixed $autoload used by add_option only
-    */
-    public function option( $option, $action, $value = 'No Value', $autoload = 'yes' ){
-        if( $action == 'add' )
-        {  
-            return add_option( $option, $value, '', $autoload );            
-        }
-        elseif( $action == 'get' )
-        {
-            return get_option( $option);    
-        }
-        elseif( $action == 'update' )
-        {        
-            return update_option( $option, $value );
-        }
-        elseif( $action == 'delete' )
-        {
-            return delete_option( $option);        
-        }
     }
                       
     /**
@@ -1275,7 +1274,7 @@ class WTGPORTALMANAGER {
     * @version 1.2.8
     */
     public function admin_menu() {    
-        global $c2p_currentversion, $c2pm, $wtgportalmanager_settings;
+        global $wtgportalmanager_currentversion, $c2pm, $wtgportalmanager_settings;
          
         $WTGPORTALMANAGER_TabMenu = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
         $WTGPORTALMANAGER_Menu = $WTGPORTALMANAGER_TabMenu->menu_array();
@@ -1955,7 +1954,7 @@ class WTGPORTALMANAGER {
     * @link http://www.wtgportalmanager.com/hacking/log-table
     */
     public function newlog( $atts ){     
-        global $wtgportalmanager_settings, $wpdb, $c2p_currentversion;
+        global $wtgportalmanager_settings, $wpdb, $wtgportalmanager_currentversion;
 
         $table_name = $wpdb->prefix . 'webtechglobal_log';
         
@@ -1982,7 +1981,7 @@ class WTGPORTALMANAGER {
             'screenshoturl' => false,# screenshot URL to aid debugging 
             'userscomment' => false,# beta testers comment to aid debugging (may double as other types of comments if log for other purposes) 
             'page' => false,# related page 
-            'version' => $c2p_currentversion, 
+            'version' => $wtgportalmanager_currentversion, 
             'panelid' => false,# id of submitted panel
             'panelname' => false,# name of submitted panel 
             'tabscreenid' => false,# id of the menu tab  
@@ -3394,7 +3393,7 @@ class WTGPORTALMANAGER {
             'token_secret' => $token_secret, 
             'screenname' => $screenname // aka users_timeline
         );
-        return update_metadata( 'webtechglobal_portal', $portal_id, 'twitterapi', $meta_value_array, $previous_value );    
+        return update_metadata( 'webtechglobal_portal', $portal_id, 'twitterapi', $meta_value_array );    
     }
     
     /**
@@ -3448,7 +3447,95 @@ class WTGPORTALMANAGER {
     public function get_portal_meta( $portal_id, $meta_key, $single = true ) {
         return get_metadata( 'webtechglobal_portal', $portal_id, $meta_key, $single );
     }
-             
+    
+    /**
+    * Gets a specific setting.
+    * 
+    * Pass keys for the array in an array.
+    * i.e. ['apisettings']['twitter'] would require array( 'api', 'twitter') 
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function get_setting( $keys_array ) {
+        global $wtgportalmanager_settings;
+
+        if( !is_array( $wtgportalmanager_settings ) ) {
+            $wtgportalmanager_settings = adminsettings();
+        }
+        
+        // build the array access
+        $array_access = '$wtgportalmanager_settings';
+        foreach( $keys_array as $key ) {
+            $array_access .= "['$key']";    
+        }
+        
+        // we will return a value if exists or false
+        eval( "
+        if( isset( $array_access ) ) { 
+            return $array_access; 
+        } else { 
+            return false;
+        }" );
+    }
+     
+    /**
+    * Gets option value for wtgportalmanager _adminset or defaults to the file version of the array if option returns invalid.
+    * 1. Called in the main wtgportalmanager.php file.
+    * 2. Installs the admin settings option record if it is currently missing due to the settings being required by all screens, this is to begin applying and configuring settings straighta away for a per user experience 
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function adminsettings() {
+        global $wtgportalmanager_settings;
+        
+        if( is_array( $wtgportalmanager_settings ) ) {
+            return $wtgportalmanager_settings;    
+        }
+        
+        // set the global
+        $result = $this->option( 'wtgportalmanager_settings', 'get' );
+        $result = maybe_unserialize( $result); 
+        if( is_array( $result ) ){
+            $wtgportalmanager_settings = $result;
+            return $wtgportalmanager_settings; 
+        }
+        
+        // install admin settings
+        return $this->install_admin_settings();
+    } 
+
+    /**
+    * Access all WordPress options functions.
+    * 
+    * @param mixed $option
+    * @param mixed $action add, get, wtgget (own query function) update, delete
+    * @param mixed $value
+    * @param mixed $autoload used by add_option only
+    */
+    public function option( $option, $action, $value = 'No Value', $autoload = 'yes' ){
+        if( $action == 'add' )
+        {  
+            return add_option( $option, $value, '', $autoload );            
+        }
+        elseif( $action == 'get' )
+        {
+            return get_option( $option);    
+        }
+        elseif( $action == 'update' )
+        {        
+            return update_option( $option, $value );
+        }
+        elseif( $action == 'delete' )
+        {
+            return delete_option( $option);        
+        }
+    }            
 }// end WTGPORTALMANAGER class 
 
 if(!class_exists( 'WP_List_Table' ) ){

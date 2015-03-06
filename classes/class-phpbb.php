@@ -38,8 +38,11 @@ class WTGPORTALMANAGER_PHPBB {
     private $phpbb_prefix = 'phpbb_';
     
     function __construct() {
-        global $wtgportalmanager_settings;
-        if( isset( $wtgportalmanager_settings['forumconfig']['tableprefix'] ) ) { $this->phpbb_prefix = $wtgportalmanager_settings['forumconfig']['tableprefix']; }
+        global $wtgportalmanager_settings; 
+       
+        if( isset( $wtgportalmanager_settings['forumconfig']['tableprefix'] ) ) { 
+            $this->phpbb_prefix = $wtgportalmanager_settings['forumconfig']['tableprefix']; 
+        }
     }
     
     /**
@@ -52,7 +55,7 @@ class WTGPORTALMANAGER_PHPBB {
     */
     public function get_posts_inrange_simple( $start = 0, $end = 9999999999, $topic = null, $forum = null, $limit = null ) {
         global $wpdb;
-        
+
         $querywhere = "WHERE post_time > $start AND post_time < $end";
         
         if( is_numeric( $topic ) ) {
@@ -64,7 +67,7 @@ class WTGPORTALMANAGER_PHPBB {
         } 
         
         if( is_numeric( $limit ) ) { 
-            $querylimit .= " LIMIT $limit";
+            $querylimit = " LIMIT $limit";
         } else { $querylimit = ''; } 
                                   
         return $wpdb->get_results( "
@@ -162,6 +165,6 @@ class WTGPORTALMANAGER_PHPBB {
         return $wpdb->get_var( "SELECT config_value 
         FROM " . $wtgportalmanager_settings['forumconfig']['tableprefix'] . "config
         WHERE config_name = '$config_name'" );    
-    }   
+    } 
 } 
 ?>

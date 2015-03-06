@@ -43,7 +43,7 @@ class WTGPORTALMANAGER_Requests {
         $this->WPCore = $this->WTGPORTALMANAGER->load_class( 'WTGPORTALMANAGER_WPCore', 'class-wpcore.php', 'classes' );
         $this->TabMenu = $this->WTGPORTALMANAGER->load_class( "WTGPORTALMANAGER_TabMenu", "class-pluginmenu.php", 'classes','pluginmenu' );   
         $this->PHPBB = $this->WTGPORTALMANAGER->load_class( "WTGPORTALMANAGER_PHPBB", "class-phpbb.php", 'classes','pluginmenu' );   
-        
+          
         // set current active portal
         if(!defined( "WTGPORTALMANAGER_ADMINCURRENT" ) ){define( "WTGPORTALMANAGER_ADMINCURRENT", $this->WTGPORTALMANAGER->get_active_portal_id() );}                
     }
@@ -93,7 +93,7 @@ class WTGPORTALMANAGER_Requests {
         }     
                    
         // arriving here means check_admin_referer() security is positive       
-        global $c2p_debug_mode, $cont;
+        global $wtgportalmanager_debug_mode, $cont;
 
         $this->PHP->var_dump( $_POST, '<h1>$_POST</h1>' );           
         $this->PHP->var_dump( $_GET, '<h1>$_GET</h1>' );    
@@ -286,8 +286,8 @@ class WTGPORTALMANAGER_Requests {
             $this->UI->create_notice( $update_result_array['failedreason'], 'info', 'Small', 'Update Failed Reason' );
         }else{  
             // storing the current file version will prevent user coming back to the update screen
-            global $c2p_currentversion;        
-            update_option( 'wtgportalmanager_installedversion', $c2p_currentversion);
+            global $wtgportalmanager_currentversion;        
+            update_option( 'wtgportalmanager_installedversion', $wtgportalmanager_currentversion);
 
             $this->UI->create_notice( __( 'Good news, the update procedure was complete. If you do not see any errors or any notices indicating a problem was detected it means the procedure worked. Please ensure any new changes suit your needs.', 'wtgportalmanager' ), 'success', 'Small', __( 'Update Complete', 'wtgportalmanager' ) );
             
@@ -712,7 +712,7 @@ class WTGPORTALMANAGER_Requests {
     * @version 1.0
     */
     public function setupportaltwitter() {
-        $this->WTGPORTALMANAGER->update_portals_twitter_api( $portal_id, $_POST['consumer_key'], $_POST['consumer_secret'], $_POST['access_token'], $_POST['access_token_secret'], $_POST['screenname'] );    
+        $this->WTGPORTALMANAGER->update_portals_twitter_api( WTGPORTALMANAGER_ADMINCURRENT, $_POST['consumer_key'], $_POST['consumer_secret'], $_POST['access_token'], $_POST['access_token_secret'], $_POST['screenname'] );    
         $this->UI->create_notice( __( "You have updated the current portals Twitter App account.", 'wtgportalmanager' ), 'success', 'Small', __( 'Portals Twitter Updated', 'wtgportalmanager' ) );       
     }
     
