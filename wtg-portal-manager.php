@@ -1,7 +1,7 @@
 <?php         
 /*
 Plugin Name: WTG Portal Manager Beta
-Version: 0.0.9
+Version: 0.0.10
 Plugin URI: http://www.webtechglobal.co.uk
 Description: Create many portals in one WordPress site that focus on individual products or services.
 Author: WebTechGlobal
@@ -38,7 +38,7 @@ if ( ( 'wp-login.php' === basename( $_SERVER['SCRIPT_FILENAME'] ) ) // Login scr
 }
               
 // package variables
-$wtgportalmanager_currentversion = '0.0.9';# to be removed, version is now in the WTGPORTALMANAGER() class 
+$wtgportalmanager_currentversion = '0.0.10';# to be removed, version is now in the WTGPORTALMANAGER() class 
 $wtgportalmanager_debug_mode = false;# to be phased out, going to use environment variables (both WP and php.ini instead)
 $wtgportalmanager_settings = get_option( 'wtgportalmanager_settings' );
 

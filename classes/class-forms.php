@@ -681,7 +681,7 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
     * @todo each hidden input should be registered
     */
     public function form_start( $form_id, $form_name, $form_title, $uploader = false ){
-        global $c2p_page_name;
+        global $wtgportalmanager_page_name;
         
         $form_name = strtolower( $form_name ); 
         $form_id = strtolower( $form_id );
@@ -702,7 +702,7 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
 
         // add packages hidden inputs (mostly part of security system)
         echo '<input type="hidden" name="wtgportalmanager_admin_action" value="true">';
-        echo '<input type="hidden" name="wtgportalmanager_hidden_pagename" value="' . $c2p_page_name . '">';
+        echo '<input type="hidden" name="wtgportalmanager_hidden_pagename" value="' . $wtgportalmanager_page_name . '">';
         echo '<input type="hidden" name="wtgportalmanager_form_formid" value="' . $form_name . '">';
         echo '<input type="hidden" name="wtgportalmanager_form_name" value="' . $form_name . '">';
         echo '<input type="hidden" name="wtgportalmanager_form_title" value="' . $form_title . '">';        

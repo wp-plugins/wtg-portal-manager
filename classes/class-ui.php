@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || die( 'No direct script access allowed!' );
 * 
 * @author Ryan R. Bayne
 * @package WTG Portal Manager
-* @since 7.0.0
+* @since 0.0.1
 * @version 1.0 
 */
 class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {     
@@ -40,8 +40,8 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
     * @version 1.0
     */
     public function add_dashboard_widgets() {
-        global $wtgportalmanager_settings;
-                     
+        global $wtgportalmanager_settings, $wtgportalmanager_menu_array;
+                                   
         // if dashboard widgets switch not enabled or does not exist return now and avoid registering widgets
         if( !isset( $wtgportalmanager_settings['widgetsettings']['dashboardwidgetsswitch'] ) || $wtgportalmanager_settings['widgetsettings']['dashboardwidgetsswitch'] !== 'enabled' ) {
             return;    
@@ -60,14 +60,11 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
         ); 
          */
                      
-        ########################
-        #                      #
-        #   ADVANCED WIDGETS   #
-        #                      #
-        ########################
-        $WTGPORTALMANAGER_TabMenu = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
-        $menu_array = $WTGPORTALMANAGER_TabMenu->menu_array();
-        foreach( $menu_array as $key => $section_array ) {
+        ###################################################################
+        #                                                                 #
+        #                        ADVANCED WIDGETS                         #
+        #                                                                 #
+        foreach( $wtgportalmanager_menu_array as $key => $section_array ) {
             
             // has the current view been activated for dashboard widgets, if not continue to the next view
             if( !isset( $wtgportalmanager_settings['widgetsettings'][ $section_array['name'] . 'dashboardwidgetsswitch'] ) ) {       
@@ -144,9 +141,9 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
     } 
 
     public function screens_menuoptions( $current ){
-        global $c2pm;
-        foreach( $c2pm as $page_slug => $page_array ){ 
-            foreach( $c2pm[$page_slug]['tabs'] as $whichvalue => $screen_array ){
+        global $wtgportalmanager_menu_array;
+        foreach( $wtgportalmanager_menu_array as $page_slug => $page_array ){ 
+            foreach( $wtgportalmanager_menu_array[$page_slug] as $whichvalue => $screen_array ){
                 $selected = '';
                 if( $screen_array['slug'] == $current){
                     $selected = 'selected="selected"';    
@@ -157,17 +154,17 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
     }
     
     public function page_menuoptions( $current, $return = false ){
-        global $c2pm;
-        foreach( $c2pm as $page_slug => $page_array ){ 
+        global $wtgportalmanager_menu_array;
+        foreach( $wtgportalmanager_menu_array as $page_slug => $page_array ){ 
             $selected = '';
             if( $page_slug == $current){
                 $selected = 'selected="selected"';    
             }
             
             if( $return){
-                return '<option value="'.$page_slug.'" '.$selected.'>'.$c2pm[$page_slug]['viewtitle'].'</option>';
+                return '<option value="'.$page_slug.'" '.$selected.'>'.$wtgportalmanager_menu_array[$page_slug]['viewtitle'].'</option>';
             }else{ 
-                echo '<option value="'.$page_slug.'" '.$selected.'>'.$c2pm[$page_slug]['viewtitle'].'</option>';
+                echo '<option value="'.$page_slug.'" '.$selected.'>'.$wtgportalmanager_menu_array[$page_slug]['viewtitle'].'</option>';
             }
         }    
     }
@@ -890,56 +887,6 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
             </td>
         </tr><?php 
     }      
-    
-    /**
-    * removes plugins name from $_GET['page'] and returns the rest, else returns main to indicate parent
-    * 
-    * @author Ryan Bayne
-    * @package WTG Portal Manager
-    * @since 0.0.1
-    * @version 1.0
-    */
-    public function get_admin_page_name() {
-        if( !isset( $_GET['page'] ) ){
-            return 'main';
-        }
-        $exloded = explode( '_', $_GET['page'] );
-        return end( $exloded );        
-    }
-    
-    /**
-    * Add hidden form fields, to help with processing and debugging
-    * Adds the _form_processing_required value, required to call the form validation file
-    *
-    * @param integer $pageid (the id used in page menu array )
-    * @param slug $panel_name (panel name form is in)
-    * @param string $panel_title (panel title form is in)
-    * @param integer $panel_number (the panel number form is in),(tab number passed instead when this function called for support button row)
-    * @param integer $step (1 = confirm form, 2 = process request, 3+ alternative processing)
-    * 
-    * @deprecated use the copy in class-forms.php, do not delete this function until the class-forms.php is well tested
-    */
-    public function hidden_form_values( $form_name, $form_title, $return = false ){
-        global $c2p_page_name;
-        $form_name = strtolower( $form_name );          
-        if( $return ){
-            $form = '';
-            $form .= wp_nonce_field( $form_name );// form name is used during processing to complete the security 
-            $form .= '<input type="hidden" name="wtgportalmanager_admin_action" value="true">';
-            $form .= '<input type="hidden" name="wtgportalmanager_hidden_pagename" value="' . $c2p_page_name . '">';
-            $form .= '<input type="hidden" name="wtgportalmanager_form_formid" value="' . $form_name . '">';
-            $form .= '<input type="hidden" name="wtgportalmanager_form_name" value="' . $form_name . '">';
-            $form .= '<input type="hidden" name="wtgportalmanager_form_title" value="' . $form_title . '">'; 
-            return $form;           
-        } else {
-            wp_nonce_field( $form_name );// form name is used during processing to complete the security  
-            echo '<input type="hidden" name="wtgportalmanager_admin_action" value="true">';
-            echo '<input type="hidden" name="wtgportalmanager_hidden_pagename" value="' . $c2p_page_name . '">';
-            echo '<input type="hidden" name="wtgportalmanager_form_formid" value="' . $form_name . '">';
-            echo '<input type="hidden" name="wtgportalmanager_form_name" value="' . $form_name . '">';
-            echo '<input type="hidden" name="wtgportalmanager_form_title" value="' . $form_title . '">';
-        }
-    }
         
     /**
     * displays a vertical list of optional icons, for use inside panels
@@ -957,7 +904,7 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
             return false;    
         }
         
-        global $c2pm, $c2p_page_name, $c2p_tab_number;
+        global $wtgportalmanager_page_name;
         
         // load help array
         $WTGPORTALMANAGER_Help = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_Help', 'class-help.php', 'classes' );
@@ -965,21 +912,19 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
         $help_array = $WTGPORTALMANAGER_Help->get_help_array();
 
         $total_icons = 0; 
-
-        $page_name = self::get_admin_page_name();
                 
         // display video icon with link to a YouTube video
-        if( isset( $help_array[ $page_name ][ WTGPORTALMANAGER_VIEWNAME ][ 'forms' ][ $form_id ][ 'formvideoid' ] ) ){
-            self::panel_video_icon( $help_array[ $page_name ][ WTGPORTALMANAGER_VIEWNAME ][ 'forms' ][ $form_id ][ 'formvideoid' ] );
+        if( isset( $help_array[ $wtgportalmanager_page_name ][ WTGPORTALMANAGER_VIEWNAME ][ 'forms' ][ $form_id ][ 'formvideoid' ] ) ){
+            self::panel_video_icon( $help_array[ $wtgportalmanager_page_name ][ WTGPORTALMANAGER_VIEWNAME ][ 'forms' ][ $form_id ][ 'formvideoid' ] );
             ++$total_icons;        
         } 
 
         // do we have all required values to build help content and display form_information_icon()
-        if( isset( $help_array[ $page_name ][ WTGPORTALMANAGER_VIEWNAME ][ 'forms' ][ $form_id ][ 'formtitle' ] )
-            && isset( $help_array[ $page_name ][ WTGPORTALMANAGER_VIEWNAME ][ 'forms' ][ $form_id ][ 'formabout' ] ) ){  
+        if( isset( $help_array[ $wtgportalmanager_page_name ][ WTGPORTALMANAGER_VIEWNAME ][ 'forms' ][ $form_id ][ 'formtitle' ] )
+            && isset( $help_array[ $wtgportalmanager_page_name ][ WTGPORTALMANAGER_VIEWNAME ][ 'forms' ][ $form_id ][ 'formabout' ] ) ){  
                            
             // display the icon that will show information about the box when clicked
-            self::box_information_icon( $page_name, WTGPORTALMANAGER_VIEWNAME, $form_id );
+            self::box_information_icon( $wtgportalmanager_page_name, WTGPORTALMANAGER_VIEWNAME, $form_id );
         }
         
         // display a trash icon which allows box to be quickly hidden
@@ -1083,7 +1028,6 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
     * @version 1.0
     */          
     public function box_information_icon( $page_name, $view_name, $form_id ) {
-        global $c2pm, $c2p_page_name, $c2p_tab_number;
         add_thickbox();
         
         $WTGPORTALMANAGER_Help = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_Help', 'class-help.php', 'classes' );
@@ -1120,7 +1064,7 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
             $all_help_content .= '.</p>';
         }
 
-        // add a link to a Youtube
+        // add a link to a forum discussion
         if( isset( $help_array[ $page_name ][ $view_name ][ 'forms' ][ $form_id ][ 'formdiscussurl' ] ) ){
             $all_help_content .= '<p>';
             $all_help_content .= __( 'We invite you to take discuss', 'wtgportalmanager' ) . ' ';

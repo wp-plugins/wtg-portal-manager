@@ -86,7 +86,7 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
      * @param array $data Data for this view
      */
     public function setup( $action, array $data ) {
-        global $wtgportalmanager_settings;
+        global $wtgportalmanager_settings,$wtgportalmanager_menu_array;
         
         // create constant for view name
         if(!defined( "WTGPORTALMANAGER_VIEWNAME") ){define( "WTGPORTALMANAGER_VIEWNAME", $this->view_name );}
@@ -95,10 +95,9 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
         $this->WTGPORTALMANAGER = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER', 'class-wtgportalmanager.php', 'classes' );
         $this->UI = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_UI', 'class-ui.php', 'classes' );  
         $this->DB = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_DB', 'class-wpdb.php', 'classes' );
-        $this->PHP = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_PHP', 'class-phplibrary.php', 'classes' );
-        $this->TabMenu = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
+        $this->PHP = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_PHP', 'class-phplibrary.php', 'classes' );    
         $this->Forms = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_Formbuilder', 'class-forms.php', 'classes' );
-        
+         
         parent::setup( $action, $data );
         
         // only output meta boxes
@@ -723,8 +722,7 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
         $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], __( 'Set the capability a user requires to view any of the plugins pages. This works independently of role plugins such as Role Scoper.', 'wtgportalmanager' ), false );        
         $this->Forms->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );
         
-        // get the tab menu 
-        $pluginmenu = $this->TabMenu->menu_array();
+        global $wtgportalmanager_menu_array;
         ?>
         
         <table class="form-table">
@@ -734,7 +732,7 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
         $saved_capability_array = get_option( 'wtgportalmanager_capabilities' );
         
         // add a menu for each page for the user selecting the required capability 
-        foreach( $pluginmenu as $key => $page_array ) {
+        foreach( $wtgportalmanager_menu_array as $key => $page_array ) {
             
             // do not add the main page to the list as a strict security measure
             if( $page_array['name'] !== 'main' ) {
@@ -762,7 +760,7 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
     * @version 1.0
     */
     public function postbox_main_dashboardwidgetsettings( $data, $box ) { 
-        global $wtgportalmanager_settings;
+        global $wtgportalmanager_settings,$wtgportalmanager_menu_array;
            
         $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], __( 'This panel is new and is advanced.   
         Please seek my advice before using it.
@@ -776,9 +774,8 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
         echo '<table class="form-table">';
 
         // now loop through views, building settings per box (display or not, permitted role/capability  
-        $WTGPORTALMANAGER_TabMenu = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
-        $menu_array = $WTGPORTALMANAGER_TabMenu->menu_array();
-        foreach( $menu_array as $key => $section_array ) {
+
+        foreach( $wtgportalmanager_menu_array as $key => $section_array ) {
 
             /*
                 'groupname' => string 'main' (length=4)

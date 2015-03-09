@@ -104,6 +104,8 @@ abstract class WTGPORTALMANAGER_View {
      * @since 0.0.1
      */
     public function __construct() {
+        global $wtgtasksmanager_menu_array;
+        
         $screen = get_current_screen();
           
         // discontinue if the view is dashboard, this class is loaded by view classes while processes dashboard widgets
@@ -120,7 +122,6 @@ abstract class WTGPORTALMANAGER_View {
        
         // load classes
         $this->WTGPORTALMANAGER = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER', 'class-wtgportalmanager.php', 'classes' );        
-        $this->Tabmenu = $this->WTGPORTALMANAGER->load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
         $this->Help = $this->WTGPORTALMANAGER->load_class( 'WTGPORTALMANAGER_Help', 'class-help.php', 'classes' );
         $this->PHP = $this->WTGPORTALMANAGER->load_class( 'WTGPORTALMANAGER_PHP', 'class-phplibary.php', 'classes' );
         $this->UI = $this->WTGPORTALMANAGER->load_class( 'WTGPORTALMANAGER_UI', 'class-ui.php', 'classes' );
@@ -128,9 +129,6 @@ abstract class WTGPORTALMANAGER_View {
         // load the help array
         $this->help_array = $this->Help->get_help_array();
 
-        // call the menu_array
-        $this->menu_array = $this->Tabmenu->menu_array();
-                
         // get page name i.e. wtgportalmanager_page_wtgportalmanager_affiliates would return affiliates
         $page_name = $this->PHP->get_string_after_last_character( $screen->id, '_' );
         
@@ -274,8 +272,7 @@ abstract class WTGPORTALMANAGER_View {
         $this->UI = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_UI', 'class-ui.php', 'classes' ); 
         $this->DB = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_DB', 'class-wpdb.php', 'classes' );
         $this->PHP = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_PHP', 'class-phplibrary.php', 'classes' );
-        $this->TabMenu = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
-                       
+    
         // loop through array of meta boxes, which doubles as our array of dashboard widgets      
         foreach( $meta_box_array as $key => $metabox ) {
             
@@ -303,7 +300,7 @@ abstract class WTGPORTALMANAGER_View {
     *
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0
     *
     * @param string $text Text for the header message
@@ -318,7 +315,7 @@ abstract class WTGPORTALMANAGER_View {
     *
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0
     *
     * @param array $action_messages Action messages for the screen
@@ -335,7 +332,7 @@ abstract class WTGPORTALMANAGER_View {
     *
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0
     *
     * @param string $id Unique HTML ID for the text box container (only visible with $wrap = true)
@@ -363,7 +360,7 @@ abstract class WTGPORTALMANAGER_View {
     *
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0
     * 
     * @uses add_meta_box()
@@ -386,7 +383,7 @@ abstract class WTGPORTALMANAGER_View {
     *
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     * 
     * @since 0.0.1
@@ -414,7 +411,7 @@ abstract class WTGPORTALMANAGER_View {
     *
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     * 
     * @since 0.0.1
@@ -456,7 +453,7 @@ abstract class WTGPORTALMANAGER_View {
     *
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     * 
     * @since 0.0.1
@@ -478,7 +475,7 @@ abstract class WTGPORTALMANAGER_View {
     *
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     * 
     * @since 0.0.1
@@ -496,7 +493,7 @@ abstract class WTGPORTALMANAGER_View {
     *
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     * 
     * @since 0.0.1
@@ -513,15 +510,15 @@ abstract class WTGPORTALMANAGER_View {
     *
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
-    * @version 1.0
+    * @since 0.0.1
+    * @version 1.1
     */       
     public function render() { 
 
-        global $c2p_tab_number, $wpecus_settings, $c2pm;
+        global $wtgportalmanager_menu_array;
 
         // get the admin page name (slug in menu array, without prepend "wtgportalmanager_")
-        $admin_page = $this->UI->get_admin_page_name();
+        $admin_page = $this->WTGPORTALMANAGER->get_admin_page_name();
         
         // if we are on the main page change $admin_page to 'main' as that is what we use in array
         if( $admin_page === 'wtgportalmanager' ){
@@ -529,7 +526,7 @@ abstract class WTGPORTALMANAGER_View {
         }   
         
         // view header - includes notices output and some admin side automation such as conflict prevention
-        $this->WTGPORTALMANAGER->pageheader( $this->menu_array[ $admin_page ]['title'], 0);
+        $this->WTGPORTALMANAGER->pageheader( $wtgportalmanager_menu_array[ $admin_page ]['title'], 0);
         
         $this->UI->status_box( 'Test' , 'test' );
                                
@@ -582,7 +579,7 @@ abstract class WTGPORTALMANAGER_View {
     *
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0
     *
     * @param array $data Data for this screen
@@ -602,7 +599,7 @@ abstract class WTGPORTALMANAGER_View {
     *
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0
     */
     protected function help_tab_content() {

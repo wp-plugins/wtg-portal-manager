@@ -41,7 +41,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0
     * 
     * @param mixed $tablename
@@ -64,7 +64,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     * 
     * @param mixed $tablename
@@ -85,7 +85,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     * 
     * @param string $tablename
@@ -142,7 +142,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0
     */
     public function delete( $tablename, $condition ){
@@ -155,7 +155,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0
     */
     public function count_rows( $tablename, $where = '' ){
@@ -168,7 +168,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0
     */
     public function get_value( $columns, $tablename, $conditions ){
@@ -181,7 +181,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     * 
     * @param mixed $meta_key
@@ -219,7 +219,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     * 
     * @access private
@@ -244,7 +244,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     * 
     * Idea for this from Ikonboard
@@ -295,7 +295,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     */
     public function customfield_keys_distinct() {
@@ -320,7 +320,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     */
     public function metakeys_distinct() {
@@ -345,7 +345,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0
     *  
     * @return 0 on fail or no records or the number of records in table
@@ -372,7 +372,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     */
     public function options_beginning_with( $prependvalue){    
@@ -397,7 +397,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0
     */
     public function post_exist_byid( $id){
@@ -412,7 +412,7 @@ class WTGPORTALMANAGER_DB {
      * 
      * @author Ryan R. Bayne
      * @package WTG Portal Manager
-     * @since 7.0.0
+     * @since 0.0.1
      * @version 1.0
      * 
      * @global array $wpdb
@@ -429,7 +429,7 @@ class WTGPORTALMANAGER_DB {
      * 
      * @author Ryan R. Bayne
      * @package WTG Portal Manager
-     * @since 7.0.0
+     * @since 0.0.1
      * @version 1.0 
      * 
      * @param string $table_name (possible database table name)
@@ -448,7 +448,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     * 
     * @returns array $tables_array
@@ -469,7 +469,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     * 
     * @param mixed $return_array [false] = mysql result [true] = array of the result
@@ -513,7 +513,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     * 
     * @param mixed $table_name
@@ -534,7 +534,7 @@ class WTGPORTALMANAGER_DB {
     *
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     *  
     * @param mixed $old_key
@@ -557,7 +557,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0 
     */
     public function log_queryactions() {
@@ -570,7 +570,7 @@ class WTGPORTALMANAGER_DB {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0
     * 
     * @returns array of distinct values or 0 if no records or false if none 

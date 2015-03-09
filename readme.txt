@@ -14,9 +14,10 @@ WTG Portal Manager assists us in managing related content for a product, service
 
 Manage related content for a product or service in one place then offer it to visitors...in one place.
 The job of this plugin is to pull related content of all types (even a WP menu) into one area for both visitors and administrators.
-Everyone should have a better experience finding, updating, adding and removing information.
+Everyone should have a better experience finding, updating, adding and removing information for the portals topic. That is goal number one. The
+portal manager should streamline the creation of portals and guide the user to ensure no elements of the portal are missed. That is goal two.
 
-The goal is a time saving tool that applies the same uniformal designs and standards to each portal with ease.
+What do you imaging the third goal should be in a plugin of this nature, let know in the plugins forum?
 
 = Main Links = 
 *   <a href="http://www.webtechglobal.co.uk/wtg-portal-manager/" title="WebTechGlobals Portal Manager">Plugins Portal</a>
@@ -84,7 +85,16 @@ Please update this plugin using your WordPress Installed Plugins screen. Click o
 This method is safer than using any other source for the files.
 
 == Changelog == 
-
+= 0.0.10 = 
+* Feature Changes    
+    * None
+* Technical Information
+    * The Update list shortcode now displays a short sentence when on a category view, previously it would generate an error.
+    * Menu array class was being loaded too many times in different locations - one global exists for the entire plugin now.
+    * Various variable name changes and removal reduntant globals.
+* Known Issues
+    * None
+    
 = 0.0.9 =
 * Feature Changes    
     * None

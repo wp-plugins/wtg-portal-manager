@@ -41,7 +41,6 @@ class WTGPORTALMANAGER_Requests {
         $this->Files = $this->WTGPORTALMANAGER->load_class( 'WTGPORTALMANAGER_Files', 'class-files.php', 'classes' );
         $this->Forms = $this->WTGPORTALMANAGER->load_class( 'WTGPORTALMANAGER_Formbuilder', 'class-forms.php', 'classes' );
         $this->WPCore = $this->WTGPORTALMANAGER->load_class( 'WTGPORTALMANAGER_WPCore', 'class-wpcore.php', 'classes' );
-        $this->TabMenu = $this->WTGPORTALMANAGER->load_class( "WTGPORTALMANAGER_TabMenu", "class-pluginmenu.php", 'classes','pluginmenu' );   
         $this->PHPBB = $this->WTGPORTALMANAGER->load_class( "WTGPORTALMANAGER_PHPBB", "class-phpbb.php", 'classes','pluginmenu' );   
           
         // set current active portal
@@ -438,18 +437,16 @@ class WTGPORTALMANAGER_Requests {
     * @version 1.0
     */
     public function pagecapabilitysettings() {
+        global $wtgportalmanager_menu_array;
         
         // get the capabilities array from WP core
         $capabilities_array = $this->WPCore->capabilities();
 
         // get stored capability settings 
         $saved_capability_array = get_option( 'wtgportalmanager_capabilities' );
-        
-        // get the tab menu 
-        $pluginmenu = $this->TabMenu->menu_array();
-                
+
         // to ensure no extra values are stored (more menus added to source) loop through page array
-        foreach( $pluginmenu as $key => $page_array ) {
+        foreach( $wtgportalmanager_menu_array as $key => $page_array ) {
             
             // ensure $_POST value is also in the capabilities array to ensure user has not hacked form, adding their own capabilities
             if( isset( $_POST['pagecap' . $page_array['name'] ] ) && in_array( $_POST['pagecap' . $page_array['name'] ], $capabilities_array ) ) {
@@ -472,12 +469,9 @@ class WTGPORTALMANAGER_Requests {
     * @version 1.0
     */
     public function dashboardwidgetsettings() {
-        global $wtgportalmanager_settings;
-        
-        // loop through pages
-        $WTGPORTALMANAGER_TabMenu = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
-        $menu_array = $WTGPORTALMANAGER_TabMenu->menu_array();       
-        foreach( $menu_array as $key => $section_array ) {
+        global $wtgportalmanager_settings,$wtgportalmanager_menu_array;
+  
+        foreach( $wtgportalmanager_menu_array as $key => $section_array ) {
 
             if( isset( $_POST[ $section_array['name'] . 'dashboardwidgetsswitch' ] ) ) {
                 $wtgportalmanager_settings['widgetsettings'][ $section_array['name'] . 'dashboardwidgetsswitch'] = $_POST[ $section_array['name'] . 'dashboardwidgetsswitch' ];    

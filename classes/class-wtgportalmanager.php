@@ -64,6 +64,7 @@ class WTGPORTALMANAGER {
         // Other class requiring WordPress hooks start here also, with a method in this main class that calls one or more methods in one or many classes
         // create a method in this class for each hook required plugin wide
         $plugin_actions = array( 
+            array( 'admin_menu',                     'set_admin_globals',                                      'all' ),        
             array( 'admin_menu',                     'admin_menu',                                             'all' ),
             array( 'admin_init',                     'process_admin_POST_GET',                                 'all' ),
             array( 'admin_init',                     'add_adminpage_actions',                                  'all' ), 
@@ -125,11 +126,31 @@ class WTGPORTALMANAGER {
             
             // load class used from admin only                   
             $this->UI = self::load_class( 'WTGPORTALMANAGER_UI', 'class-ui.php', 'classes' );
-            $this->Helparray = self::load_class( 'WTGPORTALMANAGER_Help', 'class-help.php', 'classes' );
-            $this->Tabmenu = self::load_class( "WTGPORTALMANAGER_TabMenu", "class-pluginmenu.php", 'classes','pluginmenu' );    
+            $this->Helparray = self::load_class( 'WTGPORTALMANAGER_Help', 'class-help.php', 'classes' );    
         }            
     }
 
+    /**
+    * Set variables that are required on most pages.
+    * 
+    * This is an action called by admin_menu which appears to have before admin_init.
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function set_admin_globals() {
+        global $wtgportalmanager_menu_array, $wtgportalmanager_page_name;
+        
+        // set menu array
+        $WTGPORTALMANAGER_TabMenu = self::load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
+        $wtgportalmanager_menu_array = $WTGPORTALMANAGER_TabMenu->menu_array();   
+        
+        // set page name (it's my name, each tab/view has a name)
+        $wtgportalmanager_page_name = self::get_admin_page_name();    
+    }
+        
     /**
     * $_POST and $_GET request processing procedure.
     * 
@@ -182,8 +203,15 @@ class WTGPORTALMANAGER {
     * @todo each time a new source is added, consider new but optional shortcode attributes that may avoid queries (remove this TODO once most sources added)
     */
     public function portal_updates_shortcode( $atts ) {
-        global $wtgportalmanager_settings;
+
+        // if we do not have a portal ID - we will assume we are on a view that does not
+        // yet support it i.e. category with a list of posts. 
+        if( !defined( 'WTGPORTALMANAGER_PUBLICPORTALID' ) ) {
+            return __( 'Visit this post to view a list of recent updates.', 'wtgportalmanager' );    
+        }
         
+        global $wtgportalmanager_settings;
+                                   
         // check for a cached list of items 
         $cached_query = get_transient( 'wtgportalmanager_updatepage' );
         if( $cached_query !== false ) { return $cached_query; }
@@ -411,12 +439,12 @@ class WTGPORTALMANAGER {
         if( is_admin() ) { return false;}
         
         global $wpdb;
-        
+            
         // get current post ID (gets it for media, pages, posts)
         $WTGPORTALMANAGER_PHP = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_PHP', 'class-phplibrary.php', 'classes' );
         $post_id = url_to_postid( $WTGPORTALMANAGER_PHP->currenturl() );
         $post_type = get_post_type( $post_id );
-               
+                
         /**
         *  a) Determine Content/View Type (specific terms used in WTG Portal Manager).
         * 
@@ -746,8 +774,6 @@ class WTGPORTALMANAGER {
      * @return object Instance of the initialized view, already set up, just needs to be render()ed
      */
     public static function load_draggableboxes_view( $page_slug, array $data = array() ) {
-        global $c2pm;
-        
         // include the view class
         require_once( WTGPORTALMANAGER_ABSPATH . 'classes/class-view.php' );
         
@@ -793,18 +819,12 @@ class WTGPORTALMANAGER {
      * @author Ryan Bayne
      * @package WTG Portal Manager
      * @since 0.0.1
-     * @version 1.0
+     * @version 1.1
      */
      public function load_admin_page() { 
             
         // set current active portal
         if(!defined( "WTGPORTALMANAGER_ADMINCURRENT" ) ){define( "WTGPORTALMANAGER_ADMINCURRENT", self::get_active_portal_id() );}
-                       
-        // load tab menu class which contains help content array
-        $WTGPORTALMANAGER_TabMenu = self::load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
-        
-        // call the menu_array
-        $menu_array = $WTGPORTALMANAGER_TabMenu->menu_array();        
 
         // remove "wtgportalmanager_" from page value in URL which leaves the page name as used in the menu array
         $page = 'main';
@@ -1086,6 +1106,7 @@ class WTGPORTALMANAGER {
     * @version 1.0.2
     */
     public function help_tab () {
+        global $wtgportalmanager_menu_array;
                                
         // get the current screen array
         $screen = get_current_screen();
@@ -1095,12 +1116,6 @@ class WTGPORTALMANAGER {
 
         // call the array
         $help_array = $WTGPORTALMANAGER_Help->get_help_array();
-        
-        // load tab menu class which contains help content array
-        $WTGPORTALMANAGER_TabMenu = self::load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
-        
-        // call the menu_array
-        $menu_array = $WTGPORTALMANAGER_TabMenu->menu_array();
              
         // get page name i.e. wtgportalmanager_page_wtgportalmanager_affiliates would return affiliates
         $page_name = $this->PHP->get_string_after_last_character( $screen->id, '_' );
@@ -1148,7 +1163,7 @@ class WTGPORTALMANAGER {
             $help_content .= '.</p>';
         }
 
-        // add a link to a Youtube
+        // add a link to a forum discussion
         if( isset( $help_array[ $page_name ][ $view_name ][ 'viewinfo' ][ 'viewdiscussurl' ] ) ){
             $help_content .= '<p>';
             $help_content .= __( 'We invite you to take discuss', 'wtgportalmanager' ) . ' ';
@@ -1198,7 +1213,7 @@ class WTGPORTALMANAGER {
                 $help_content .= '.</p>';
             }
 
-            // add a link to a Youtube
+            // add a link to a forum discussion
             if( isset( $value[ 'formdiscussurl' ] ) ){
                 $help_content .= '<p>';
                 $help_content .= __( 'We invite you to discuss', 'wtgportalmanager' ) . ' ';
@@ -1274,15 +1289,15 @@ class WTGPORTALMANAGER {
     * @version 1.2.8
     */
     public function admin_menu() {    
-        global $wtgportalmanager_currentversion, $c2pm, $wtgportalmanager_settings;
-         
-        $WTGPORTALMANAGER_TabMenu = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
-        $WTGPORTALMANAGER_Menu = $WTGPORTALMANAGER_TabMenu->menu_array();
- 
+        global $wtgportalmanager_currentversion, $wtgportalmanager_settings, $wtgportalmanager_menu_array;
+
         // set the callback, we can change this during the loop and call methods more dynamically
         // this approach allows us to call the same function for all pages
         $subpage_callback = array( $this, 'show_admin_page' );
-
+                
+        // menu array is modified a little so we create a new variable for it
+        $WTGPORTALMANAGER_Menu = $wtgportalmanager_menu_array;
+    
         // add menu
         $this->page_hooks[] = add_menu_page( $WTGPORTALMANAGER_Menu['main']['title'], 
         __( 'WTG Portal Manager', 'wtgportalmanager' ), 
@@ -1359,19 +1374,15 @@ class WTGPORTALMANAGER {
      * 
      * @param string $thepagekey this is the screen being visited
      */
-    public function build_tab_menu( $current_page_name ){           
-        // load tab menu class which contains help content array
-        $WTGPORTALMANAGER_TabMenu = WTGPORTALMANAGER::load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
-        
-        // call the menu_array
-        $menu_array = $WTGPORTALMANAGER_TabMenu->menu_array();
+    public function build_tab_menu( $current_page_name ){    
+        global $wtgportalmanager_menu_array;       
                 
         echo '<h2 class="nav-tab-wrapper">';
         
         // get the current pages viewgroup for building the correct tab menu
-        $view_group = $menu_array[ $current_page_name ][ 'groupname'];
+        $view_group = $wtgportalmanager_menu_array[ $current_page_name ][ 'groupname'];
             
-        foreach( $menu_array as $page_name => $values ){
+        foreach( $wtgportalmanager_menu_array as $page_name => $values ){
                                                          
             if( $values['groupname'] === $view_group ){
                 
@@ -2204,7 +2215,7 @@ class WTGPORTALMANAGER {
     * Adds Script Start and Stylesheets to the beginning of pages
     */
     public function pageheader( $pagetitle, $layout ){
-        global $current_user, $c2pm, $wtgportalmanager_settings;
+        global $current_user, $wtgportalmanager_settings;
 
         // get admin settings again, all submissions and processing should update settings
         // if the interface does not show expected changes, it means there is a problem updating settings before this line
@@ -2483,39 +2494,6 @@ class WTGPORTALMANAGER {
     */
     public function is_plugin_page( $page){
         return strstr( $page, 'wtgportalmanager' );  
-    } 
-    
-    /**
-    * Determines if giving tab for the giving page should be displayed or not based on current user.
-    * 
-    * Checks for reasons not to display and returns false. If no reason found to hide the tab then true is default.
-    * 
-    * @param mixed $page
-    * @param mixed $tab
-    * 
-    * @return boolean
-    */
-    public function should_tab_be_displayed( $page, $tab){
-        global $c2pm;
-
-        if( isset( $c2pm[$page]['tabs'][$tab]['permissions']['capability'] ) ){
-            $boolean = current_user_can( $c2pm[$page]['tabs'][$tab]['permissions']['capability'] );
-            if( $boolean ==  false ){
-                return false;
-            }
-        }
-
-        // if screen not active
-        if( isset( $c2pm[$page]['tabs'][$tab]['active'] ) && $c2pm[$page]['tabs'][$tab]['active'] == false ){
-            return false;
-        }    
-        
-        // if screen is not active at all (used to disable a screen in all packages and configurations)
-        if( isset( $c2pm[$page]['tabs'][$tab]['active'] ) && $c2pm[$page]['tabs'][$tab]['active'] == false ){
-            return false;
-        }
-                     
-        return true;      
     } 
     
     /**
@@ -2874,7 +2852,7 @@ class WTGPORTALMANAGER {
     * 
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
-    * @since 7.0.0
+    * @since 0.0.1
     * @version 1.0.2
     * 
     * @param integer $project_id
@@ -3535,7 +3513,24 @@ class WTGPORTALMANAGER {
         {
             return delete_option( $option);        
         }
-    }            
+    }
+    
+    /**
+    * removes plugins name from $_GET['page'] and returns the rest, else returns main to indicate parent
+    * 
+    * @author Ryan Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.1
+    */
+    public function get_admin_page_name() {
+        if( !isset( $_GET['page'] ) ){
+            return 'main';
+        }
+        $exloded = explode( '_', $_GET['page'] );
+        return end( $exloded );        
+    }
+                
 }// end WTGPORTALMANAGER class 
 
 if(!class_exists( 'WP_List_Table' ) ){
