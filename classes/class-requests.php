@@ -58,39 +58,8 @@ class WTGPORTALMANAGER_Requests {
     * @since 0.0.1
     * @version 1.0
     */
-    public function process_admin_request() { 
-        $method = 'post';// post or get
-
-        // ensure processing requested
-        // if a hacker changes this, no processing happens so no validation required
-        if(!isset( $_POST['wtgportalmanager_admin_action'] ) && !isset( $_GET['wtgportalmanageraction'] ) ) {
-            return;
-        }          
-               
-        // handle $_POST action - form names are validated
-        if( isset( $_POST['wtgportalmanager_admin_action'] ) && $_POST['wtgportalmanager_admin_action'] == true){        
-            if( isset( $_POST['wtgportalmanager_admin_referer'] ) ){        
-                
-                // a few forms have the wtgportalmanager_admin_referer where the default hidden values are not in use
-                check_admin_referer( $_POST['wtgportalmanager_admin_referer'] ); 
-                $function_name = $_POST['wtgportalmanageraction'];     
-                   
-            } else {                                       
-                
-                // 99% of forms will use this method
-                check_admin_referer( $_POST['wtgportalmanager_form_name'] );
-                $function_name = $_POST['wtgportalmanager_form_name'];
-            
-            }        
-        }
-                          
-        // $_GET request
-        if( isset( $_GET['wtgportalmanageraction'] ) ){      
-            check_admin_referer( $_GET['wtgportalmanageraction'] );        
-            $function_name = $_GET['wtgportalmanageraction'];
-            $method = 'get';
-        }     
-                   
+    public function process_admin_request( $method, $function ) { 
+   
         // arriving here means check_admin_referer() security is positive       
         global $wtgportalmanager_debug_mode, $cont;
 
@@ -98,7 +67,7 @@ class WTGPORTALMANAGER_Requests {
         $this->PHP->var_dump( $_GET, '<h1>$_GET</h1>' );    
                               
         // $_POST security
-        if( $method == 'post' ) {                      
+        if( $method == 'post' || $method == 'POST' || $method == '$_POST' ) {                      
             // check_admin_referer() wp_die()'s if security fails so if we arrive here WordPress security has been passed
             // now we validate individual values against their pre-registered validation method
             // some generic notices are displayed - this system makes development faster
@@ -121,15 +90,15 @@ class WTGPORTALMANAGER_Requests {
         }
         
         // handle a situation where the submitted form requests a function that does not exist
-        if( !method_exists( $this, $function_name ) ){
+        if( !method_exists( $this, $function ) ){
             wp_die( sprintf( __( "The method for processing your request was not found. This can usually be resolved quickly. Please report method %s does not exist. <a href='https://www.youtube.com/watch?v=vAImGQJdO_k' target='_blank'>Watch a video</a> explaining this problem.", 'wtgportalmanager' ), 
             $function_name) ); 
             return false;// should not be required with wp_die() but it helps to add clarity when browsing code and is a precaution.   
         }
         
         // all security passed - call the processing function
-        if( isset( $function_name) && is_string( $function_name ) ) {
-            eval( 'self::' . $function_name .'();' );
+        if( isset( $function) && is_string( $function ) ) {
+            eval( 'self::' . $function .'();' );
         }          
     }  
 
@@ -300,70 +269,70 @@ class WTGPORTALMANAGER_Requests {
     * Save drip feed limits  
     */
     public function schedulerestrictions() {
-        $c2p_schedule_array = $this->WTGPORTALMANAGER->get_option_schedule_array();
+        $wtgportalmanager_schedule_array = $this->WTGPORTALMANAGER->get_option_schedule_array();
         
         // if any required values are not in $_POST set them to zero
         if(!isset( $_POST['day'] ) ){
-            $c2p_schedule_array['limits']['day'] = 0;        
+            $wtgportalmanager_schedule_array['limits']['day'] = 0;        
         }else{
-            $c2p_schedule_array['limits']['day'] = $_POST['day'];            
+            $wtgportalmanager_schedule_array['limits']['day'] = $_POST['day'];            
         }
         
         if(!isset( $_POST['hour'] ) ){
-            $c2p_schedule_array['limits']['hour'] = 0;
+            $wtgportalmanager_schedule_array['limits']['hour'] = 0;
         }else{
-            $c2p_schedule_array['limits']['hour'] = $_POST['hour'];            
+            $wtgportalmanager_schedule_array['limits']['hour'] = $_POST['hour'];            
         }
         
         if(!isset( $_POST['session'] ) ){
-            $c2p_schedule_array['limits']['session'] = 0;
+            $wtgportalmanager_schedule_array['limits']['session'] = 0;
         }else{
-            $c2p_schedule_array['limits']['session'] = $_POST['session'];            
+            $wtgportalmanager_schedule_array['limits']['session'] = $_POST['session'];            
         }
                                  
-        // ensure $c2p_schedule_array is an array, it may be boolean false if schedule has never been set
-        if( isset( $c2p_schedule_array ) && is_array( $c2p_schedule_array ) ){
+        // ensure $wtgportalmanager_schedule_array is an array, it may be boolean false if schedule has never been set
+        if( isset( $wtgportalmanager_schedule_array ) && is_array( $wtgportalmanager_schedule_array ) ){
             
             // if times array exists, unset the [times] array
-            if( isset( $c2p_schedule_array['days'] ) ){
-                unset( $c2p_schedule_array['days'] );    
+            if( isset( $wtgportalmanager_schedule_array['days'] ) ){
+                unset( $wtgportalmanager_schedule_array['days'] );    
             }
             
             // if hours array exists, unset the [hours] array
-            if( isset( $c2p_schedule_array['hours'] ) ){
-                unset( $c2p_schedule_array['hours'] );    
+            if( isset( $wtgportalmanager_schedule_array['hours'] ) ){
+                unset( $wtgportalmanager_schedule_array['hours'] );    
             }
             
         }else{
             // $schedule_array value is not array, this is first time it is being set
-            $c2p_schedule_array = array();
+            $wtgportalmanager_schedule_array = array();
         }
         
         // loop through all days and set each one to true or false
         if( isset( $_POST['wtgportalmanager_scheduleday_list'] ) ){
             foreach( $_POST['wtgportalmanager_scheduleday_list'] as $key => $submitted_day ){
-                $c2p_schedule_array['days'][$submitted_day] = true;        
+                $wtgportalmanager_schedule_array['days'][$submitted_day] = true;        
             }  
         } 
         
         // loop through all hours and add each one to the array, any not in array will not be permitted                              
         if( isset( $_POST['wtgportalmanager_schedulehour_list'] ) ){
             foreach( $_POST['wtgportalmanager_schedulehour_list'] as $key => $submitted_hour){
-                $c2p_schedule_array['hours'][$submitted_hour] = true;        
+                $wtgportalmanager_schedule_array['hours'][$submitted_hour] = true;        
             }           
         }    
 
         if( isset( $_POST['deleteuserswaiting'] ) )
         {
-            $c2p_schedule_array['eventtypes']['deleteuserswaiting']['switch'] = 'enabled';                
+            $wtgportalmanager_schedule_array['eventtypes']['deleteuserswaiting']['switch'] = 'enabled';                
         }
         
         if( isset( $_POST['eventsendemails'] ) )
         {
-            $c2p_schedule_array['eventtypes']['sendemails']['switch'] = 'enabled';    
+            $wtgportalmanager_schedule_array['eventtypes']['sendemails']['switch'] = 'enabled';    
         }        
   
-        $this->WTGPORTALMANAGER->update_option_schedule_array( $c2p_schedule_array );
+        $this->WTGPORTALMANAGER->update_option_schedule_array( $wtgportalmanager_schedule_array );
         $this->UI->notice_depreciated( __( 'Schedule settings have been saved.', 'wtgportalmanager' ), 'success', 'Large', __( 'Schedule Times Saved', 'wtgportalmanager' ) );   
     } 
     
@@ -496,30 +465,121 @@ class WTGPORTALMANAGER_Requests {
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
     * @since 0.0.1
-    * @version 1.0
+    * @version 1.1
     */
     public function createportal() {
-   
-        // build optional fields array (pages, blog category, forum ID etc)
-        $optional_fields = array();
-        $optional_fields['newportalmainpageid'] = $_POST['newportalmainpageid'];
-        $optional_fields['newportalupdatespageid'] = $_POST['newportalupdatespageid'];
-        $optional_fields['newportalblogcategory'] = $_POST['newportalblogcategory'];
-        $optional_fields['newportalfaqpage'] = $_POST['newportalfaqpage'];
-        $optional_fields['newportalfeaturespage'] = $_POST['newportalfeaturespage'];
-        $optional_fields['newportalforumid'] = $_POST['newportalforumid'];
-        $optional_fields['newportalsupportpage'] = $_POST['newportalsupportpage'];
-        $optional_fields['newportalscreenshotspage'] = $_POST['newportalscreenshotspage'];
-        $optional_fields['newportalvideospage'] = $_POST['newportalvideospage'];
-        $optional_fields['newportaltestimonialspage'] = $_POST['newportaltestimonialspage'];
+        $home_page_id = false;
+        $menu_id = false;
+        $sidebar_id = false;
         
-        // insert the portal
-        $portal_id = $this->WTGPORTALMANAGER->insertportal( $_POST['newportalname'], $_POST['newportaldescription'], $_POST['selectedmenu'], $optional_fields );  
+        if( $_POST['selectedmenu'] == 'createmenu' ) {
+            $menu_id = wp_create_nav_menu( $_POST['newportalname'] );
+        } else if( is_numeric( $_POST['selectedmenu'] ) ) {
+            $menu_id = $_POST['selectedmenu'];    
+        }
 
-        // set the new portal to active (applies to current user only)
-        $this->WTGPORTALMANAGER->activate_portal( get_current_user_id(), $portal_id );
+        // insert the portal
+        $new_portal_id = $this->WTGPORTALMANAGER->insertportal( $_POST['newportalname'], $_POST['newportaldescription'], $menu_id );  
         
-        $this->UI->create_notice( __( "The new portal ID is $portal_id and you can begin working on the portal now.", 'wtgportalmanager' ), 'success', 'Small', __( 'Portal Created', 'wtgportalmanager' ) );                                              
+        if( isset( $_POST['newportalblogcategory'] ) ){
+            $this->WTGPORTALMANAGER->add_portal_meta( $new_portal_id, 'maincategory', $_POST['newportalblogcategory'], true );    
+        }
+        
+        if( isset( $opt['newportalforumid'] ) ){
+            $this->WTGPORTALMANAGER->add_portal_meta( $new_portal_id, 'primary_forum_id', $_POST['newportalforumid'], true );    
+        }
+                         
+        ##########################################################
+        #                                                        #
+        #                     SETUP PAGES                        #
+        #                                                        #
+        ##########################################################
+        // array of default pages (together can act like a portal template once settings applied to each for specific content)
+        $default_pages_array = array(
+            array( 'programmingpurpose' => 'main', 'visiblepurpose' => __( 'Home', 'wtgportalmanager' ) ),
+            array( 'programmingpurpose' => 'updates', 'visiblepurpose' => __( 'Updates', 'wtgportalmanager' ) ),
+            array( 'programmingpurpose' => 'activity', 'visiblepurpose' => __( 'Activity', 'wtgportalmanager' ) ),
+            array( 'programmingpurpose' => 'faq', 'visiblepurpose' => __( 'FAQ', 'wtgportalmanager' ) ),
+            array( 'programmingpurpose' => 'features', 'visiblepurpose' => __( 'Features', 'wtgportalmanager' ) ),
+            array( 'programmingpurpose' => 'support', 'visiblepurpose' => __( 'Support', 'wtgportalmanager' ) ),
+            array( 'programmingpurpose' => 'imagegallery', 'visiblepurpose' => __( 'Image Gallery', 'wtgportalmanager' ) ),
+            array( 'programmingpurpose' => 'videogallery', 'visiblepurpose' => __( 'Video Gallery', 'wtgportalmanager' ) ),
+            array( 'programmingpurpose' => 'testimonials', 'visiblepurpose' => __( 'Testimonials', 'wtgportalmanager' ) ),
+        );
+        
+        $page_id = false;
+        foreach( $default_pages_array as $key => $page ) {
+            // skip default page if user entered nothing for it
+            if( empty( $_POST['newportal' . $page['programmingpurpose'] . 'page'] ) ) {
+                continue;    
+            }
+            
+            // main page as Home or Index
+            if( $_POST['newportal' . $page['programmingpurpose'] . 'page'] == '#' ) 
+            { 
+                // create a new page (wp_insert_post() is used)
+                $page_id = $this->WTGPORTALMANAGER->create_portal_page( $new_portal_id, $_POST['newportalname'], $page, $_POST['applydefaultcontent0'], $home_page_id ); 
+                
+                if( $page['programmingpurpose'] == 'main' ) { 
+                    $home_page_id = $page_id;
+                }
+            } 
+            else 
+            { 
+                $page_id = $_POST['newportal' . $page['programmingpurpose'] . 'page'];
+                $this->WTGPORTALMANAGER->add_portal_meta( $new_portal_id, 'page', $page_id, true );   
+                $this->WTGPORTALMANAGER->update_page_purpose( $new_portal_id, $page_id, 'main' );
+                
+                if( $page['programmingpurpose'] == 'main' ) {
+                    $home_page_id = $page_id; 
+                }
+            }
+            
+            // create new sidebar or get submitted value
+            if( $_POST['selectedsidebar'] == 'createsidebar' ) {
+                $sidebar_id = $this->WTGPORTALMANAGER->insert_sidebar( $_POST['newportalname'] );
+            } else { 
+                $sidebar_id = $_POST['selectedsidebar'];# validation is done by class-forms.php ensuring this is a numeric value
+            }
+                                                                      
+            // if sidebar metakey provided add the giving sidebar ID or create a sidebar (do not confuse with a sidebar location)
+            // for example the Pindol theme used by WebTechGlobal uses meta-key "mfn-post-sidebar" and the value is the sidebar ID.
+            // that results in a specific sidebar being displayed when viewing the post or page - this is an approach we use to maintain
+            // the feeling of being in a portal.                                              
+            if( !empty( $_POST['sidebarmetakey'] ) && $sidebar_id ) {
+                update_post_meta( $page_id, $_POST['sidebarmetakey'], $sidebar_id );        
+            }
+            
+            // add page to menu
+            if( $menu_id && $page_id ) {
+
+                $menu_item_data = array(      
+                    //'menu-item-db-id' => $menu_item_db_id,   I think this is for updating an existing menu
+                    'menu-item-object-id' => $page_id,
+                    'menu-item-object' => 'page',
+                    'menu-item-parent-id' => 0,
+                    'menu-item-position' => 0,
+                    'menu-item-type' => 'post_type',
+                    'menu-item-title' => '',
+                    'menu-item-url' => '',
+                    'menu-item-description' => '',
+                    'menu-item-attr-title' => '',
+                    'menu-item-target' => '',
+                    'menu-item-classes' => '',
+                    'menu-item-xfn' => '',
+                    'menu-item-status' => 'publish'
+                );
+                        
+                wp_update_nav_menu_item( $menu_id, 0, $menu_item_data );    
+            }
+            
+            unset( $page_id );
+        }
+                
+        // set the new portal to active (applies to current user only)
+        $this->WTGPORTALMANAGER->activate_portal( get_current_user_id(), $new_portal_id );
+        
+        $this->UI->create_notice( __( "The new portal ID is $new_portal_id and you can begin working on the portal now.", 'wtgportalmanager' ), 'success', 'Small', __( 'Portal Created', 'wtgportalmanager' ) );                                              
     }
     
     /**
@@ -545,7 +605,9 @@ class WTGPORTALMANAGER_Requests {
     * @version 1.0
     */
     public function addpagerelationship() {
-        $this->WTGPORTALMANAGER->create_page_relationship( $this->WTGPORTALMANAGER->get_active_portal_id(), $_POST['addpageid'] );
+        $portal_id = $this->WTGPORTALMANAGER->get_active_portal_id();
+        $this->WTGPORTALMANAGER->create_page_relationship( $portal_id, $_POST['addpageid'] );
+        $this->WTGPORTALMANAGER->update_page_purpose( $portal_id, $_POST['addpageid'], $_POST['pagepurpose'] );
         $this->UI->create_notice( __( "A new page has been added to your current active portal.", 'wtgportalmanager' ), 'success', 'Small', __( 'Page Relationship Created', 'wtgportalmanager' ) );                                                       
     }
 

@@ -120,9 +120,9 @@ class WTGPORTALMANAGER {
         if( is_admin() ){
         
             // admin globals 
-            global $c2p_notice_array;
+            global $wtgportalmanager_notice_array;
             
-            $c2p_notice_array = array();// set notice array for storing new notices in (not persistent notices)
+            $wtgportalmanager_notice_array = array();// set notice array for storing new notices in (not persistent notices)
             
             // load class used from admin only                   
             $this->UI = self::load_class( 'WTGPORTALMANAGER_UI', 'class-ui.php', 'classes' );
@@ -147,24 +147,65 @@ class WTGPORTALMANAGER {
         $WTGPORTALMANAGER_TabMenu = self::load_class( 'WTGPORTALMANAGER_TabMenu', 'class-pluginmenu.php', 'classes' );
         $wtgportalmanager_menu_array = $WTGPORTALMANAGER_TabMenu->menu_array();   
         
-        // set page name (it's my name, each tab/view has a name)
+        // set page name (it's my own approach, each tab/view has a name which is shorter than the WP view ID)
         $wtgportalmanager_page_name = self::get_admin_page_name();    
     }
         
     /**
     * $_POST and $_GET request processing procedure.
-    * 
-    * function was reduced to two lines, the contents mode to WTGPORTALMANAGER_Requests itself.
     *
     * @author Ryan R. Bayne
     * @package WTG Portal Manager
     * @since 0.0.1
-    * @version 1.0.4
+    * @version 1.5
     */
-    public function process_admin_POST_GET() {  
+    public function process_admin_POST_GET() {
+        // no processing for autosaves in this plugin
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+            return;
+        }
+        
+        // no processing during these actions, processing for these may be handled elsewhere
+        // i.e. processing for post types is handed by save_post hook
+        $views_to_avoid = array( 'editpost' );
+        if( isset( $_POST['action'] ) && in_array( $_POST['action'], $views_to_avoid ) ) {
+            return;    
+        }
+                
+        $method = 'unknown';
+        $function = 'nofunctionestablished123';
+                                  
+        // $_POST request check then nonce validation 
+        if( isset( $_POST['wtgportalmanager_admin_action'] ) ) {
+            $early_deny_request = false;
+                
+            // run nonce security for a form submission
+            if( !isset( $_POST['wtgportalmanager_form_name'] ) ) {    
+                return false;
+            }
+
+            check_admin_referer( $_POST['wtgportalmanager_form_name'] );# exists here if failed
+            $function = $_POST['wtgportalmanager_form_name'];
+                    
+            // set method - used to apply the correct security procedures
+            $method = 'post';
+        }          
+              
+        // $_GET reuest check by plugin OR a WP core $_GET request that is handled by the plugin
+        if( isset( $_GET['wtgportalmanageraction'] )  ) {
+               
+            check_admin_referer( $_GET['wtgportalmanageraction'] );# exists here if failed
+            $function = $_GET['wtgportalmanageraction'];  
+
+            // set method - used to apply the correct security procedures
+            $method = 'get';  
+        }
+              
         // include the class that processes form submissions and nonce links
-        $WTGPORTALMANAGER_REQ = self::load_class( 'WTGPORTALMANAGER_Requests', 'class-requests.php', 'classes' );
-        $WTGPORTALMANAGER_REQ->process_admin_request();
+        if( $method !== 'unknown' ) {   
+            $WTGPORTALMANAGER_REQ = self::load_class( 'WTGPORTALMANAGER_Requests', 'class-requests.php', 'classes' );
+            $WTGPORTALMANAGER_REQ->process_admin_request( $method, $function );
+        }
     }
         
     /**
@@ -1034,7 +1075,7 @@ class WTGPORTALMANAGER {
             case 'exampleone':
                 
                 break;
-            case 'c2pnotinuseyet':
+            case 'c 2pnotinuseyet':
                 
                 break;
         } 
@@ -1444,13 +1485,13 @@ class WTGPORTALMANAGER {
     * 3. This function itself is considered part of the event, we cycle through event types
     * 
     * Debugging Trace
-    * $c2p_schedule_array['history']['trace'] is used to indicate how far the this script went before a return.
+    * $wtgportalmanager_schedule_array['history']['trace'] is used to indicate how far the this script went before a return.
     * This is a simple way to quickly determine where we are arriving.
     * 
     * @return boolean false if no due events else returns true to indicate event was due and full function ran
     */
     public function event_check() {
-        $c2p_schedule_array = self::get_option_schedule_array();
+        $wtgportalmanager_schedule_array = self::get_option_schedule_array();
         
         // do not continue if WordPress is DOING_AJAX
         if( self::request_made() ){return;}
@@ -1461,17 +1502,17 @@ class WTGPORTALMANAGER {
         //  get and ensure we have the schedule array
         //  we do not initialize the schedule array as the user may be in the processing of deleting it
         //  do not use wtgportalmanager_event_refused as we do not want to set the array
-        if(!isset( $c2p_schedule_array ) || !is_array( $c2p_schedule_array ) ){       
+        if(!isset( $wtgportalmanager_schedule_array ) || !is_array( $wtgportalmanager_schedule_array ) ){       
             self::log_schedule( __( 'Scheduled events cannot be peformed due to the schedule array of stored settings not existing.', 'wtgportalmanager' ), __( 'schedule settings missing', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);
             return false;
         }
                       
         // check when last event was run - avoid running two events within 1 minute of each other
         // I've set it here because this function could grow over time and we dont want to go through all the checks PER VISIT or even within a few seconds of each other.
-        if( isset( $c2p_schedule_array['history']['lasteventtime'] ) )
+        if( isset( $wtgportalmanager_schedule_array['history']['lasteventtime'] ) )
         {    
             // increase lasteventtime by 60 seconds
-            $soonest = $c2p_schedule_array['history']['lasteventtime'] + 60;//hack info page http://www.webtechglobal.co.uk/hacking/increase-automatic-events-delay-time
+            $soonest = $wtgportalmanager_schedule_array['history']['lasteventtime'] + 60;//hack info page http://www.webtechglobal.co.uk/hacking/increase-automatic-events-delay-time
             
             if( $soonest > time() ){
                 self::log_schedule( __( 'No changed made as it has not been 60 seconds since the last event.', 'wtgportalmanager' ), __( 'enforcing schedule event delay', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);
@@ -1482,9 +1523,9 @@ class WTGPORTALMANAGER {
         else
         {               
             // set lasteventtime value for the first time
-            $c2p_schedule_array['history']['lasteventtime'] = time();
-            $c2p_schedule_array['history']['lastreturnreason'] = __( 'The last even time event was set for the first time, no further processing was done.', 'wtgportalmanager' );
-            self::update_option_schedule_array( $c2p_schedule_array );
+            $wtgportalmanager_schedule_array['history']['lasteventtime'] = time();
+            $wtgportalmanager_schedule_array['history']['lastreturnreason'] = __( 'The last even time event was set for the first time, no further processing was done.', 'wtgportalmanager' );
+            self::update_option_schedule_array( $wtgportalmanager_schedule_array );
             self::log_schedule( __( 'The plugin initialized the timer for enforcing a delay between events. This action is treated as an event itself and no further
             changes are made during this schedule check.', 'wtgportalmanager' ), __( 'initialized schedule delay timer', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);
 
@@ -1493,11 +1534,11 @@ class WTGPORTALMANAGER {
         }                             
                                            
         // is last event type value set? if not set default as dataupdate, this means postcreation is the next event
-        if(!isset( $c2p_schedule_array['history']['lasteventtype'] ) )
+        if(!isset( $wtgportalmanager_schedule_array['history']['lasteventtype'] ) )
         {    
-            $c2p_schedule_array['history']['lasteventtype'] = 'dataupdate';
-            $c2p_schedule_array['history']['lastreturnreason'] = __( 'The last event type value was set for the first time', 'wtgportalmanager' );
-            self::update_option_schedule_array( $c2p_schedule_array );
+            $wtgportalmanager_schedule_array['history']['lasteventtype'] = 'dataupdate';
+            $wtgportalmanager_schedule_array['history']['lastreturnreason'] = __( 'The last event type value was set for the first time', 'wtgportalmanager' );
+            self::update_option_schedule_array( $wtgportalmanager_schedule_array );
 
             self::log_schedule( __( 'The plugin initialized last event type value, this tells the plugin what event was last performed and it is used to
             determine what event comes next.', 'wtgportalmanager' ), __( 'initialized schedule last event value', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);
@@ -1507,11 +1548,11 @@ class WTGPORTALMANAGER {
         }
                  
         // does the "day_lastreset"" time value exist, if not we set it now then return
-        if(!isset( $c2p_schedule_array['history']['day_lastreset'] ) )
+        if(!isset( $wtgportalmanager_schedule_array['history']['day_lastreset'] ) )
         {    
-            $c2p_schedule_array['history']['day_lastreset'] = time();
-            $c2p_schedule_array['history']['lastreturnreason'] = __( 'The last daily reset time was set for the first time', 'wtgportalmanager' );
-            self::update_option_schedule_array( $c2p_schedule_array );
+            $wtgportalmanager_schedule_array['history']['day_lastreset'] = time();
+            $wtgportalmanager_schedule_array['history']['lastreturnreason'] = __( 'The last daily reset time was set for the first time', 'wtgportalmanager' );
+            self::update_option_schedule_array( $wtgportalmanager_schedule_array );
             
             self::log_schedule( __( 'Day timer was set in schedule system. This is the 24 hour timer used to track daily events. It was set, no further action was taking 
             and should only happen once.', 'wtgportalmanager' ), __( '24 hour timer set', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);
@@ -1521,11 +1562,11 @@ class WTGPORTALMANAGER {
         } 
                                                          
         // does the "hour_lastreset"" time value exist, if not we set it now then return
-        if(!isset( $c2p_schedule_array['history']['hour_lastreset'] ) )
+        if(!isset( $wtgportalmanager_schedule_array['history']['hour_lastreset'] ) )
         { 
-            $c2p_schedule_array['history']['hour_lastreset'] = time();
-            $c2p_schedule_array['history']['lastreturnreason'] = __( 'The hourly reset time was set for the first time', 'wtgportalmanager' );
-            self::update_option_schedule_array( $c2p_schedule_array );
+            $wtgportalmanager_schedule_array['history']['hour_lastreset'] = time();
+            $wtgportalmanager_schedule_array['history']['lastreturnreason'] = __( 'The hourly reset time was set for the first time', 'wtgportalmanager' );
+            self::update_option_schedule_array( $wtgportalmanager_schedule_array );
             
             self::log_schedule( __( 'Hourly timer was set in schedule system. The time has been set for hourly countdown. No further action was 
             taking. This should only happen once.', 'wtgportalmanager' ), __( 'one hour timer set', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);        
@@ -1535,22 +1576,22 @@ class WTGPORTALMANAGER {
         }    
                
         // does the hourcounter value exist, if not we set it now then return (this is to initialize the variable)
-        if(!isset( $c2p_schedule_array['history']['hourcounter'] ) )
+        if(!isset( $wtgportalmanager_schedule_array['history']['hourcounter'] ) )
         {     
-            $c2p_schedule_array['history']['hourcounter'] = 0;
-            $c2p_schedule_array['history']['lastreturnreason'] = __( 'The hourly events counter was set for the first time', 'wtgportalmanager' );
-            self::update_option_schedule_array( $c2p_schedule_array );
+            $wtgportalmanager_schedule_array['history']['hourcounter'] = 0;
+            $wtgportalmanager_schedule_array['history']['lastreturnreason'] = __( 'The hourly events counter was set for the first time', 'wtgportalmanager' );
+            self::update_option_schedule_array( $wtgportalmanager_schedule_array );
             self::log_schedule( __( 'Number of events per hour has been set for the first time, this change is treated as an event.', 'wtgportalmanager' ), __( 'hourly events counter set', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);     
             self::event_return( __( 'initialised hourly events counter', 'wtgportalmanager' ) );   
             return;
         }     
                                      
         // does the daycounter value exist, if not we set it now then return (this is to initialize the variable)
-        if(!isset( $c2p_schedule_array['history']['daycounter'] ) )
+        if(!isset( $wtgportalmanager_schedule_array['history']['daycounter'] ) )
         {
-            $c2p_schedule_array['history']['daycounter'] = 0;
-            $c2p_schedule_array['history']['lastreturnreason'] = __( 'The daily events counter was set for the first time', 'wtgportalmanager' );
-            self::update_option_schedule_array( $c2p_schedule_array );
+            $wtgportalmanager_schedule_array['history']['daycounter'] = 0;
+            $wtgportalmanager_schedule_array['history']['lastreturnreason'] = __( 'The daily events counter was set for the first time', 'wtgportalmanager' );
+            self::update_option_schedule_array( $wtgportalmanager_schedule_array );
             self::log_schedule( __( 'The daily events counter was not set. No further action was taking. This measure should only happen once.', 'wtgportalmanager' ), __( 'daily events counter set', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);     
             self::event_return( __( 'initialised daily events counter', 'wtgportalmanager' ) );           
             return;
@@ -1558,29 +1599,29 @@ class WTGPORTALMANAGER {
 
         // has hourly target counter been reset for this hour - if not, reset now then return (this is an event)
         // does not actually start at the beginning of an hour, it is a 60 min allowance not hour to hour
-        $hour_reset_time = $c2p_schedule_array['history']['hour_lastreset'] + 3600;
+        $hour_reset_time = $wtgportalmanager_schedule_array['history']['hour_lastreset'] + 3600;
         if(time() > $hour_reset_time )
         {     
             // reset hour_lastreset value and the hourlycounter
-            $c2p_schedule_array['history']['hour_lastreset'] = time();
-            $c2p_schedule_array['history']['hourcounter'] = 0;
-            $c2p_schedule_array['history']['lastreturnreason'] = __( 'Hourly counter was reset for another 60 minute period', 'wtgportalmanager' );
-            self::update_option_schedule_array( $c2p_schedule_array );
+            $wtgportalmanager_schedule_array['history']['hour_lastreset'] = time();
+            $wtgportalmanager_schedule_array['history']['hourcounter'] = 0;
+            $wtgportalmanager_schedule_array['history']['lastreturnreason'] = __( 'Hourly counter was reset for another 60 minute period', 'wtgportalmanager' );
+            self::update_option_schedule_array( $wtgportalmanager_schedule_array );
             self::log_schedule( __( 'Hourly counter has been reset, no further action is taking during this event. This should only happen once every hour.', 'wtgportalmanager' ), __( 'hourly counter reset', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);
             self::event_return( __( 'hourly counter was reset', 'wtgportalmanager' ) );        
             return;
         }  
 
         // have all target counters been reset for today - if not we will reset now and end event check (in otherwords this was the event)
-        $day_reset_time = $c2p_schedule_array['history']['day_lastreset'] + 86400;
+        $day_reset_time = $wtgportalmanager_schedule_array['history']['day_lastreset'] + 86400;
         if(time() > $day_reset_time )
         {
-            $c2p_schedule_array['history']['hour_lastreset'] = time();
-            $c2p_schedule_array['history']['day_lastreset'] = time();
-            $c2p_schedule_array['history']['hourcounter'] = 0;
-            $c2p_schedule_array['history']['daycounter'] = 0;
-            $c2p_schedule_array['history']['lastreturnreason'] = __( 'Daily and hourly events counter reset for a new 24 hours period', 'wtgportalmanager' );
-            self::update_option_schedule_array( $c2p_schedule_array ); 
+            $wtgportalmanager_schedule_array['history']['hour_lastreset'] = time();
+            $wtgportalmanager_schedule_array['history']['day_lastreset'] = time();
+            $wtgportalmanager_schedule_array['history']['hourcounter'] = 0;
+            $wtgportalmanager_schedule_array['history']['daycounter'] = 0;
+            $wtgportalmanager_schedule_array['history']['lastreturnreason'] = __( 'Daily and hourly events counter reset for a new 24 hours period', 'wtgportalmanager' );
+            self::update_option_schedule_array( $wtgportalmanager_schedule_array ); 
             self::log_schedule( __( '24 hours had passed and the daily counter had to be reset. No further action is taking during these events and this should only happen once a day.', 'wtgportalmanager' ), __( 'daily counter reset', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);   
             self::event_return( '24 hour counter was reset' );            
             return;
@@ -1588,7 +1629,7 @@ class WTGPORTALMANAGER {
 
         // ensure event processing allowed today
         $day = strtolower(date( 'l' ) );
-        if(!isset( $c2p_schedule_array['days'][$day] ) )
+        if(!isset( $wtgportalmanager_schedule_array['days'][$day] ) )
         {
             self::event_return( __( 'Event processing is has not been permitted for today', 'wtgportalmanager' ) );
             self::log_schedule( __( 'Event processing is not permitted for today. Please check schedule settings to change this.', 'wtgportalmanager' ), __( 'schedule not permitted today', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);
@@ -1598,7 +1639,7 @@ class WTGPORTALMANAGER {
 
         // ensure event processing allow this hour   
         $hour = strtolower( date( 'G' ) );
-        if(!isset( $c2p_schedule_array['hours'][$hour] ) )
+        if(!isset( $wtgportalmanager_schedule_array['hours'][$hour] ) )
         {
             self::event_return( __( 'Event processing is has not been permitted for the hour', 'wtgportalmanager' ) );
             self::log_schedule( __( 'Processsing is not permitted for the current hour. Please check schedule settings to change this.', 'wtgportalmanager' ), __( 'hour not permitted', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);
@@ -1607,29 +1648,29 @@ class WTGPORTALMANAGER {
         }
 
         // ensure hourly limit value has been set
-        if(!isset( $c2p_schedule_array['limits']['hour'] ) )
+        if(!isset( $wtgportalmanager_schedule_array['limits']['hour'] ) )
         {  
-            $c2p_schedule_array['limits']['hour'] = 1;
-            $c2p_schedule_array['history']['lastreturnreason'] = __( 'Hourly limit was set for the first time', 'wtgportalmanager' );
-            self::update_option_schedule_array( $c2p_schedule_array );
+            $wtgportalmanager_schedule_array['limits']['hour'] = 1;
+            $wtgportalmanager_schedule_array['history']['lastreturnreason'] = __( 'Hourly limit was set for the first time', 'wtgportalmanager' );
+            self::update_option_schedule_array( $wtgportalmanager_schedule_array );
             self::log_schedule( __( 'The hourly limit value had not been set yet. You can change the limit but the default has been set to one. No further action is taking during this event and this should only happen once.', 'wtgportalmanager' ), __( 'no hourly limit set', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);
             self::event_return( __( 'initialised hourly limit', 'wtgportalmanager' ) );        
             return;
         }     
                     
         // ensure daily limit value has been set
-        if(!isset( $c2p_schedule_array['limits']['day'] ) )
+        if(!isset( $wtgportalmanager_schedule_array['limits']['day'] ) )
         {
-            $c2p_schedule_array['limits']['day'] = 1;
-            $c2p_schedule_array['history']['lastreturnreason'] = __( 'Daily limit was set for the first time', 'wtgportalmanager' );
-            self::update_option_schedule_array( $c2p_schedule_array );
+            $wtgportalmanager_schedule_array['limits']['day'] = 1;
+            $wtgportalmanager_schedule_array['history']['lastreturnreason'] = __( 'Daily limit was set for the first time', 'wtgportalmanager' );
+            self::update_option_schedule_array( $wtgportalmanager_schedule_array );
             self::log_schedule( __( 'The daily limit value had not been set yet. It has now been set as one which allows only one post to be created or updated etc. This action should only happen once.', 'wtgportalmanager' ), __( 'no daily limit set', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__); 
             self::event_return( __( 'initialised daily limit', 'wtgportalmanager' ) );           
             return;
         }
 
         // if this hours target has been met return
-        if( $c2p_schedule_array['history']['hourcounter'] >= $c2p_schedule_array['limits']['hour'] )
+        if( $wtgportalmanager_schedule_array['history']['hourcounter'] >= $wtgportalmanager_schedule_array['limits']['hour'] )
         {
             self::event_return( 'The hours event limit/target has been met' );
             self::log_schedule( __( 'The events target for the current hour has been met so no further processing is permitted.', 'wtgportalmanager' ), __( 'hourly target met', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);
@@ -1638,7 +1679,7 @@ class WTGPORTALMANAGER {
         }
          
         // if this days target has been met return
-        if( $c2p_schedule_array['history']['daycounter'] >= $c2p_schedule_array['limits']['day'] )
+        if( $wtgportalmanager_schedule_array['history']['daycounter'] >= $wtgportalmanager_schedule_array['limits']['day'] )
         {
             self::event_return( __( 'The days event limit/target has been met', 'wtgportalmanager' ) );
             self::log_schedule( __( 'The daily events target has been met for the current 24 hour period (see daily timer counter). No events will be processed until the daily timer reaches 24 hours and is reset.', 'wtgportalmanager' ), __( 'daily target met', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);
@@ -1651,12 +1692,12 @@ class WTGPORTALMANAGER {
                   
         self::log_schedule(sprintf( __( 'The schedule system decided that the next event type is %s.', 'wtgportalmanager' ), $run_event_type), __( 'next event type determined', 'wtgportalmanager' ),1, 'scheduledeventcheck', __LINE__, __FILE__, __FUNCTION__);
             
-        // update $c2p_schedule_array with decided event type to advance the cycle and increase hourly plus daily counter
-        $c2p_schedule_array['history']['lasteventtype'] = $run_event_type;
-        $c2p_schedule_array['history']['lasteventtime'] = time(); 
-        $c2p_schedule_array['history']['hourcounter'] = $c2p_schedule_array['history']['hourcounter'] + 1; 
-        $c2p_schedule_array['history']['daycounter'] = $c2p_schedule_array['history']['daycounter'] + 1;
-        self::update_option_schedule_array( $c2p_schedule_array );
+        // update $wtgportalmanager_schedule_array with decided event type to advance the cycle and increase hourly plus daily counter
+        $wtgportalmanager_schedule_array['history']['lasteventtype'] = $run_event_type;
+        $wtgportalmanager_schedule_array['history']['lasteventtime'] = time(); 
+        $wtgportalmanager_schedule_array['history']['hourcounter'] = $wtgportalmanager_schedule_array['history']['hourcounter'] + 1; 
+        $wtgportalmanager_schedule_array['history']['daycounter'] = $wtgportalmanager_schedule_array['history']['daycounter'] + 1;
+        self::update_option_schedule_array( $wtgportalmanager_schedule_array );
         
         // run procedure for decided event
         $event_action_outcome = $this->event_action( $run_event_type); 
@@ -1704,7 +1745,7 @@ class WTGPORTALMANAGER {
     * @link http://www.webtechglobal.co.uk/hacking/event-types
     */
     public function event_decide() {
-        global $c2p_schedule_array, $wtgportalmanager_settings;
+        global $wtgportalmanager_schedule_array, $wtgportalmanager_settings;
         
         // return focused event if active
         $override_event = $this->event_decide_focus();// returns false if no override settings in place    
@@ -1718,14 +1759,14 @@ class WTGPORTALMANAGER {
         $run_event_type = 'createposts';
         
         // if we have no last event to establish the next event return the default
-        if(!isset( $c2p_schedule_array['history']['lasteventtype'] ) ){
+        if(!isset( $wtgportalmanager_schedule_array['history']['lasteventtype'] ) ){
             return $run_event_type;
         }
         $bypass = false;// change to true when the next event after the last is not active, then the first available in the list will be the event 
         
         // dataimport -> dataupdate  
-        if( $c2p_schedule_array['history']['lasteventtype'] == 'dataimport' ){
-            if( isset( $c2p_schedule_array['eventtypes']['dataupdate']['switch'] ) && $c2p_schedule_array['eventtypes']['dataupdate']['switch'] == true){
+        if( $wtgportalmanager_schedule_array['history']['lasteventtype'] == 'dataimport' ){
+            if( isset( $wtgportalmanager_schedule_array['eventtypes']['dataupdate']['switch'] ) && $wtgportalmanager_schedule_array['eventtypes']['dataupdate']['switch'] == true){
                  return 'dataupdate';    
             }else{
                 $bypass = true; 
@@ -1733,8 +1774,8 @@ class WTGPORTALMANAGER {
         }
         
         // dataupdate -> postcreation
-        if( $c2p_schedule_array['history']['lasteventtype'] == 'dataupdate' || $bypass == true){
-            if( isset( $c2p_schedule_array['eventtypes']['postcreation']['switch'] ) && $c2p_schedule_array['eventtypes']['postcreation']['switch'] == true){
+        if( $wtgportalmanager_schedule_array['history']['lasteventtype'] == 'dataupdate' || $bypass == true){
+            if( isset( $wtgportalmanager_schedule_array['eventtypes']['postcreation']['switch'] ) && $wtgportalmanager_schedule_array['eventtypes']['postcreation']['switch'] == true){
                  return 'postcreation';    
             }else{
                 $bypass = true; 
@@ -1742,8 +1783,8 @@ class WTGPORTALMANAGER {
         }    
         
         // postcreation -> postupdate
-        if( $c2p_schedule_array['history']['lasteventtype'] == 'postcreation' || $bypass == true){
-            if( isset( $c2p_schedule_array['eventtypes']['postupdate']['switch'] ) && $c2p_schedule_array['eventtypes']['postupdate']['switch'] == true){
+        if( $wtgportalmanager_schedule_array['history']['lasteventtype'] == 'postcreation' || $bypass == true){
+            if( isset( $wtgportalmanager_schedule_array['eventtypes']['postupdate']['switch'] ) && $wtgportalmanager_schedule_array['eventtypes']['postupdate']['switch'] == true){
                 return 'postupdate';    
             }else{
                 $bypass = true; 
@@ -1751,8 +1792,8 @@ class WTGPORTALMANAGER {
         }    
 
         // postupdate -> dataimport
-        if( $c2p_schedule_array['history']['lasteventtype'] == 'postupdate' || $bypass == true){
-            if( isset( $c2p_schedule_array['eventtypes']['dataimport']['switch'] ) && $c2p_schedule_array['eventtypes']['dataimport']['switch'] == true){
+        if( $wtgportalmanager_schedule_array['history']['lasteventtype'] == 'postupdate' || $bypass == true){
+            if( isset( $wtgportalmanager_schedule_array['eventtypes']['dataimport']['switch'] ) && $wtgportalmanager_schedule_array['eventtypes']['dataimport']['switch'] == true){
                  return 'dataimport';    
             }else{
                 $bypass = true; 
@@ -1766,9 +1807,9 @@ class WTGPORTALMANAGER {
     * Determines if user wants the schedule to focus on one specific event type
     */
     public function event_decide_focus() {
-        $c2p_schedule_array = self::get_option_schedule_array();
-        if( isset( $c2p_schedule_array['focus'] ) && $c2p_schedule_array['focus'] != false ){
-            return $c2p_schedule_array['focus'];    
+        $wtgportalmanager_schedule_array = self::get_option_schedule_array();
+        if( isset( $wtgportalmanager_schedule_array['focus'] ) && $wtgportalmanager_schedule_array['focus'] != false ){
+            return $wtgportalmanager_schedule_array['focus'];    
         }
     }
     
@@ -1782,8 +1823,8 @@ class WTGPORTALMANAGER {
     */
     public function event_action( $run_event_type){    
         global $wtgportalmanager_settings, $WTGPORTALMANAGER;
-        $c2p_schedule_array = WTGPORTALMANAGER::get_option_schedule_array();       
-        $c2p_schedule_array['history']['lasteventaction'] = $run_event_type . ' Requested'; 
+        $wtgportalmanager_schedule_array = WTGPORTALMANAGER::get_option_schedule_array();       
+        $wtgportalmanager_schedule_array['history']['lasteventaction'] = $run_event_type . ' Requested'; 
             
         // we can override the $run_event_type                          
         // run specific script for the giving action      
@@ -1808,7 +1849,7 @@ class WTGPORTALMANAGER {
                 break;
             
         }// end switch
-        self::update_option_schedule_array( $c2p_schedule_array );
+        self::update_option_schedule_array( $wtgportalmanager_schedule_array );
     } 
     
     /**
@@ -1875,26 +1916,6 @@ class WTGPORTALMANAGER {
     }
     
     /**
-    * gets the specific row/s for a giving post ID
-    * 
-    * UPDATE: "c2p_postid != $post_id" was in use but this is wrong. I'm not sure how this has gone
-    * undetected considering where the function has been used. 
-    *
-    * @param mixed $project_id
-    * @param mixed $total
-    * 
-    * @author Ryan Bayne
-    * @package WTG Portal Manager
-    * @since 0.0.1
-    * @version 1.0
-    */
-    public function get_posts_rows( $project_id, $post_id, $idcolumn = false ){
-        $this->DB = self::load_class( 'WTGPORTALMANAGER_DB', 'class-wpdb.php', 'classes' );
-        $tables_array = $this->get_dbtable_sources( $project_id );
-        return $this->DB->query_multipletables( $tables_array, $idcolumn, 'c2p_postid = '.$post_id );
-    }
-    
-    /**
     * gets one or more rows from imported data for specific post created by specific project
     * 
     * @uses get_posts_rows() which does a join query 
@@ -1948,7 +1969,7 @@ class WTGPORTALMANAGER {
         }
         
         // WTG Portal Manager own special processing triggers
-        if( isset( $_GET['c2pprocsub'] ) || isset( $_GET['wtgportalmanageraction'] ) || isset( $_GET['nonceaction'] ) ){
+        if( isset( $_GET['wtgportalmanageraction'] ) || isset( $_GET['nonceaction'] ) ){
             return true;
         }
         
@@ -2263,8 +2284,8 @@ class WTGPORTALMANAGER {
             $this->UI->output_depreciated();// now using display_all();
             $this->UI->display_all();              
           
-            // process global security and any other types of checks here such such check systems requirements, also checks installation status
-            $c2p_requirements_missing = self::check_requirements(true);
+            // check systems requirements, also checks installation status
+            self::check_requirements( true );
     }                          
     
     /**
@@ -2417,8 +2438,8 @@ class WTGPORTALMANAGER {
     * Array [limits] holds the maximum post creation numbers 
     */
     public static function get_option_schedule_array() {
-        $c2p_schedule_array = get_option( 'wtgportalmanager_schedule' );
-        return maybe_unserialize( $c2p_schedule_array );    
+        $wtgportalmanager_schedule_array = get_option( 'wtgportalmanager_schedule' );
+        return maybe_unserialize( $wtgportalmanager_schedule_array );    
     }
     
     /**
@@ -2513,7 +2534,7 @@ class WTGPORTALMANAGER {
     * @deprecated this method has been moved to the WTGPORTALMANAGER_UI class
     */
     public function linkaction( $page, $action, $title = 'WTG Portal Manager admin link', $text = 'Click Here', $values = '' ){
-        return '<a href="'. wp_nonce_url( admin_url() . 'admin.php?page=' . $page . '&wtgportalmanageraction=' . $action  . $values, $action ) . '" title="' . $title . '" class="button c2pbutton">' . $text . '</a>';
+        return '<a href="'. wp_nonce_url( admin_url() . 'admin.php?page=' . $page . '&wtgportalmanageraction=' . $action  . $values, $action ) . '" title="' . $title . '" class="button wtgportalmanagerbutton">' . $text . '</a>';
     }
     
     /**
@@ -2620,9 +2641,9 @@ class WTGPORTALMANAGER {
     * Stores the last known reason why auto event was refused during checks in event_check()
     */
     public function event_return( $return_reason){
-        $c2p_schedule_array = self::get_option_schedule_array();
-        $c2p_schedule_array['history']['lastreturnreason'] = $return_reason;
-        self::update_option_schedule_array( $c2p_schedule_array );   
+        $wtgportalmanager_schedule_array = self::get_option_schedule_array();
+        $wtgportalmanager_schedule_array['history']['lastreturnreason'] = $return_reason;
+        self::update_option_schedule_array( $wtgportalmanager_schedule_array );   
     }  
     
     /**
@@ -3036,7 +3057,7 @@ class WTGPORTALMANAGER {
     * 
     * @returns boolean false if insert() does not return numeric value (ID)
     */
-    public function insertportal( $portal_name, $portal_description, $portal_menu_id, $opt = array() ) {
+    public function insertportal( $portal_name, $portal_description, $portal_menu_id ) {
         global $wpdb;
         $new_portal_id = $this->DB->insert( $wpdb->webtechglobal_portals, array( 'portalname' => $portal_name ) );   
         if( !is_numeric( $new_portal_id ) ) {
@@ -3046,38 +3067,6 @@ class WTGPORTALMANAGER {
         // we have a new portal id - insert portal meta
         $this->add_portal_meta( $new_portal_id, 'description', $portal_description, true );
         $this->add_portal_meta( $new_portal_id, 'mainmenu', $portal_menu_id, true );
-                         
-        // add optional fields
-        if( isset( $opt['newportalmainpageid'] ) ){
-            $this->add_portal_meta( $new_portal_id, 'page', $opt['newportalmainpageid'], true );    
-        }
-        if( isset( $opt['newportalupdatespageid'] ) ){
-            $this->add_portal_meta( $new_portal_id, 'primary_updates_page', $opt['newportalupdatespageid'], true );    
-        }
-        if( isset( $opt['newportalblogcategory'] ) ){
-            $this->add_portal_meta( $new_portal_id, 'maincategory', $opt['newportalblogcategory'], true );    
-        }
-        if( isset( $opt['newportalfaqpage'] ) ){
-            $this->add_portal_meta( $new_portal_id, 'primary_faq_page', $opt['newportalfaqpage'], true );    
-        }
-        if( isset( $opt['newportalfeaturespage'] ) ){
-            $this->add_portal_meta( $new_portal_id, 'primary_features_page', $opt['newportalfeaturespage'], true );    
-        }
-        if( isset( $opt['newportalforumid'] ) ){
-            $this->add_portal_meta( $new_portal_id, 'primary_forum_id', $opt['newportalforumid'], true );    
-        }
-        if( isset( $opt['newportalsupportpage'] ) ){
-            $this->add_portal_meta( $new_portal_id, 'primary_support_page', $opt['newportalsupportpage'], true );    
-        }
-        if( isset( $opt['newportalscreenshotspage'] ) ){
-            $this->add_portal_meta( $new_portal_id, 'primary_screenshot_page', $opt['newportalscreenshotspage'], true );    
-        }
-        if( isset( $opt['newportalvideospage'] ) ){
-            $this->add_portal_meta( $new_portal_id, 'primary_video_page', $opt['newportalvideospage'], true );    
-        }
-        if( isset( $opt['newportaltestimonialspage'] ) ){
-            $this->add_portal_meta( $new_portal_id, 'primary_testimonial_page', $opt['newportaltestimonialspage'], true );    
-        }
         
         return $new_portal_id;
     } 
@@ -3166,6 +3155,20 @@ class WTGPORTALMANAGER {
     */
     public function create_page_relationship( $portal_id, $page_id ) {
         return self::add_portal_meta( $portal_id, 'page', $page_id, false );
+    }
+    
+    /**
+    * Sets the purpose of a page. This will allow other features to apply different
+    * treatment to page and automatically make use of pages in pre-determined ways.
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function update_page_purpose( $portal_id, $page_id, $purpose ) {
+        update_post_meta( $page_id, 'portalpurpose', $purpose, null );
+        return self::update_portal_meta( $portal_id, 'pagepurpose' . $page_id, $page_id, false );
     }
     
     /**
@@ -3530,6 +3533,76 @@ class WTGPORTALMANAGER {
         $exloded = explode( '_', $_GET['page'] );
         return end( $exloded );        
     }
+    
+    /**
+    * Create pages for portal and add default content, which could get advanced if we
+    * want to use integrated plugins or themes by default. 
+    * 
+    * I decided to put all pages into one method, with switch for now. When each
+    * case gets longer they should be moved into their own methods.
+    * 
+    * @author Ryan R. Bayne
+    * @package WTG Portal Manager
+    * @since 0.0.1
+    * @version 1.0
+    * 
+    * @param mixed $portal_id
+    * @param mixed $portal_name
+    * @param mixed $page_purpose array( 'programmingpurpose' => 'main', 'visiblepurpose' => 'Home' )
+    * @param mixed $parent_id
+    * @return WP_Error
+    */
+    public function create_portal_page( $portal_id, $portal_name, $page_purpose = array(), $parent_id = null ) {
+        // build custom content per page purpose
+        switch ( $page_purpose['programmingpurpose'] ) {
+           case 'main':// home page for the entire portal
+                /* create custom content here based on the purpose of page and settings, this is where things could get advanced */
+             break;
+           case 1:
+        
+             break;
+           case 2:
+        
+             break;
+        }
+        
+        ###############################################################
+        #                                                             #
+        #                         INSERT POST                         #
+        #                                                             #
+        ###############################################################
+        $post_array = array(
+          'post_content'   => 'The ' . $page_purpose['visiblepurpose'] . ' page is still to be published.',
+          'post_title'     => $portal_name . ' ' . $page_purpose['visiblepurpose'],  
+          'post_status'    => 'publish',
+          'post_type'      => 'page',
+        );  
+                                                           
+        $new_portal_page_id = wp_insert_post( $post_array ); 
+        
+        // add page to portal meta table as a "page"
+        self::add_portal_meta( $portal_id, 'page', $new_portal_page_id, true );   
+        
+        // add both portal meta and meta to the page (post meta) itself for establishing the pages purpose within the portal
+        self::update_page_purpose( $portal_id, $new_portal_page_id, $page_purpose['programmingpurpose'] );# function updates both post and portal meta tables
+        
+        return $new_portal_page_id;
+    }
+    
+    /**
+    * Saves sidebar to WTG Portal Manager settings. They are registered on init.
+    * 
+    * @author Ryan R. Bayne
+    * @package REPLACEPACKAGE
+    * @since 0.0.1
+    * @version 1.0
+    */
+    public function insert_sidebar( $sidebar_name ) {
+        global $wtgportalmanager_settings;
+        $wtgportalmanager_settings['sidebars'][] = $sidebar_name;
+        return self::update_settings( $wtgportalmanager_settings );    
+    }
+    
                 
 }// end WTGPORTALMANAGER class 
 

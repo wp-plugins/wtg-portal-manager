@@ -71,9 +71,11 @@ the plugins forums.
 
 == Screenshots ==
 
-1. Screenshot one.
-2. Screenshot two.
-3. Screenshot three.
+1. API accounts on a per portal basis but default ones for ease.
+2. Working on one portal at a time allows all of the plugins views to help you focus on that portal. We active the portal we wish to edit.
+3. A single form creates a new portal plus pages, a WP core menu, a WP core sidebar for displaying the menu and more to come.
+4. Some common portal pages. Enter their existing ID or enter # to bulk create them.
+5. Display forum content in the portal to encourage traffic to flow between portal and forum.
 
 == Languages ==
 
@@ -85,6 +87,18 @@ Please update this plugin using your WordPress Installed Plugins screen. Click o
 This method is safer than using any other source for the files.
 
 == Changelog == 
+= 0.0.11 = 
+* Feature Changes    
+    * This update takes us closer to building the scope of a new portal with the submissio of a single form.
+    * Can now enter # instead of a page ID to create the page - when making a new portal.
+    * Can now create a menu when creating a new portal.
+    * Pages are automatically assigned to selected or generated menu. 
+    * Create Portal form can now create a sidebar or select existing one (not to be confused with sidebar position offered by themes). 
+* Technical Information
+    * None
+* Known Issues
+    * None
+
 = 0.0.10 = 
 * Feature Changes    
     * None

@@ -820,7 +820,7 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
     * @version 1.0                                                                              
     */
     public function postbox_main_createportal( $data, $box ) {
-        $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], __( 'Create a new portal. It will become active in the admin straight away so that you may begin building it. The portal is technically live once you publish the home page but it will need a menu.', 'wtgportalmanager' ), false );        
+        $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], __( 'Create a new portal using existing pages and menus or generate them. Only a small number of fields below are required, skip what you do not need. I recommend that you maintain a test blog that is much like your live site and setup your portal there first.', 'wtgportalmanager' ), false );        
         $this->Forms->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );
         
         global $wtgportalmanager_settings;
@@ -830,29 +830,56 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
             <?php        
             $this->Forms->text_advanced( $box['args']['formid'], 'newportalname', 'newportalname', __( 'Portal Name', 'wtgportalmanager' ), '', false, true, true, false, false, array( 'alphanumeric' ) );      
             $this->Forms->textarea_basic( $box['args']['formid'], 'newportaldescription', 'newportaldescription', __( 'Portal Description', 'wtgportalmanager' ), '', true, 5, 20, array( 'alphanumeric' ) );
-            
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalblogcategory', 'newportalblogcategory', __( 'Blog Category ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalforumid', 'newportalforumid', __( 'Forum ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );
+
             // get users menus
             $menu_terms_array = get_terms( 'nav_menu', array( 'hide_empty' => false ) ); 
             
             // build array of items for menu (key must be the value that is submitted for storage by form)
-            $menus = array();
+            $menus = array( 'createmenu' => __( 'Create New Menu', 'wtgportalmanager' ) );
             foreach( $menu_terms_array as $key => $term ) {
                 $menus[ $term->term_id ] = $term->name;
             }
                         
             $this->Forms->input( $box['args']['formid'], 'menu', 'selectedmenu', 'selectedmenu', __( 'Main Menu', 'wtgportalmanager' ), 'Select Registered Menu', true, '', array( 'itemsarray' => $menus, 'defaultvalue' => 'notselected123', 'defaultitem_name' => __( 'Menu Not Selected', 'wtgportalmanager' ) ) );        
+            $this->Forms->text_basic( $box['args']['formid'], 'sidebarmetakey', 'sidebarmetakey', __( 'Sidebar Metakey', 'wtgportalmanager' ), '', false, 5, 20, array( 'alphanumeric' ) );       
             
+            // select existing sidebar or select Create Sidebar
+            global $wp_registered_sidebars;
+            $sidebars_array = array( 'createsidebar' => __( 'Create Sidebar', 'wtgportalmanager' ) );
+            
+            foreach( $wp_registered_sidebars as $sidebar ) {
+                $sidebars_array[$sidebar['id']] = $sidebar['name'];
+            }  
+
+            $this->Forms->input( $box['args']['formid'], 'menu', 'selectedsidebar', 'selectedsidebar', __( 'Main Sidebar', 'wtgportalmanager' ), 'Select Registered Sidebars', true, '', array( 'itemsarray' => $sidebars_array, 'defaultvalue' => 'notselected123', 'defaultitem_name' => __( 'Sidebar Not Selected', 'wtgportalmanager' ) ) );        
+                     
+            ?>
+            </table>
+            
+            
+            <hr>
+            
+   
+            <table class="form-table">
+            <?php 
+                        
             // main pages (it's not all about the portal menu, integration with other plugins on a per page basis is the focus)
-            $this->Forms->text_basic( $box['args']['formid'], 'newportalmainpageid', 'newportalmainpageid', __( 'Main Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
-            $this->Forms->text_basic( $box['args']['formid'], 'newportalupdatespage', 'newportalupdatespageid', __( 'Updates Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
-            $this->Forms->text_basic( $box['args']['formid'], 'newportalblogcategory', 'newportalblogcategory', __( 'Blog Category ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->input_subline( __( 'Enter # in the fields below to create pages instead of using existing ones.', 'wtgportalmanager' ) );
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalmainpage', 'newportalmainpage', __( 'Main Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalupdatespage', 'newportalupdatespage', __( 'Updates Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalactivitypage', 'newportalactivitypage', __( 'Activity Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
             $this->Forms->text_basic( $box['args']['formid'], 'newportalfaqpage', 'newportalfaqpage', __( 'FAQ Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
-            $this->Forms->text_basic( $box['args']['formid'], 'newportalfeaturespage', 'newportalfeaturespage', __( 'Features Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
-            $this->Forms->text_basic( $box['args']['formid'], 'newportalforumid', 'newportalforumid', __( 'Forum ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalfeaturespage', 'newportalfeaturespage', __( 'Features Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );              
             $this->Forms->text_basic( $box['args']['formid'], 'newportalsupportpage', 'newportalsupportpage', __( 'Support Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
-            $this->Forms->text_basic( $box['args']['formid'], 'newportalscreenshotspage', 'newportalscreenshotspage', __( 'Screenshots Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
-            $this->Forms->text_basic( $box['args']['formid'], 'newportalvideospage', 'newportalvideospage', __( 'Videos Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalimagegallerypage', 'newportalimagegallerypage', __( 'Screenshots Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            $this->Forms->text_basic( $box['args']['formid'], 'newportalvideogallerypage', 'newportalvideogallerypage', __( 'Videos Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
             $this->Forms->text_basic( $box['args']['formid'], 'newportaltestimonialspage', 'newportaltestimonialspage', __( 'Testimonials Page ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
+            
+            // option for applying default content and settings to each page - what that means will depends on the plugins and themes installed
+            $current_value = array();
+            $this->Forms->checkboxes_basic( $box['args']['formid'], 'applydefaultcontent', 'applydefaultcontent', __( 'Apply Default Content', 'wtgportalmanager' ), array( true => 'Yes' ), $current_value, false, array( 'boolean' ), false );
             ?>
             </table> 
             

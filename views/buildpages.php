@@ -142,6 +142,13 @@ class WTGPORTALMANAGER_Buildpages_View extends WTGPORTALMANAGER_View {
             <table class="form-table">                  
             <?php 
             $this->Forms->text_basic( $box['args']['formid'], 'addpageid', 'addpageid', 'Page ID', '', true, array( 'numeric' ) );
+            
+            // select pages purpose, stored in portal meta and post meta for working from both directions
+            // metakey example: "pagepurpose-22" (22 being post ID)
+            // value example: 'videogallery'
+            $items_array = array( 'support' => 'Support Info', 'imagegallery' => 'Image Gallery', 'videogallery' => 'Video Gallery', 'faq' => 'FAQ', 'features' => 'Features List', 'updates' => 'Updates', 'activity' => 'Activity', 'tasks' => 'Tasks', 'demo' => 'Demo', 'testimonials' => 'Testimonials' );
+            $current_value = '';
+            $this->Forms->menu_basic( $box['args']['formid'], 'pagepurpose', 'pagepurpose', __( 'Page Purpose', 'wtgportalmanager' ), $items_array, false, $current_value, array( 'alpha' ) );
             ?>
             </table>
         

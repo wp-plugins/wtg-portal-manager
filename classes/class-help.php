@@ -90,7 +90,7 @@ class WTGPORTALMANAGER_Help {
         $h = array();
       
         // PAGE: main
-        $h[ 'main' ][ 'pageinfo' ] = self::enterpage( __( 'Welcome', 'wtgportalmanager' ), __( 'My name Ryan and I can help. If your not new to WTG Portal Manager you may notice a lot of help text in version 8 has been removed from the interface already. Do not worry it is only temporary. I decided that it was best for everyone if the help text was typed and published on WebTechGlobal then imported to the plugin using a clever system. That clever system is being made right now and involves a WordPress plugin plus SOAP web services. I refer to it as documentation handling. Such a system has never been seen in any WordPress plugin. In short it will deliver help content from the plugins website too the plugins interface.', 'wtgportalmanager' ), 'www.webtechglobal.co.uk', 'www.youtube.com/WebTechGlobal' );
+        $h[ 'main' ][ 'pageinfo' ] = self::enterpage( __( 'Welcome', 'wtgportalmanager' ), __( 'My name Ryan Bayne and I created this plugin. I can also help you at anytime. This help tab is not complete and will eventually offer help content for every feature.', 'wtgportalmanager' ), WTGPORTALMANAGER_PORTAL, WTGPORTALMANAGER_YOUTUBEPLAYLIST );
 
         // PAGE: generalsettings (EXAMPLE ONLY THIS PAGE DOES NOT EXIST)      
         $h[ 'generalsettings' ][ 'pageinfo' ][ 'pagetitle' ]       = __( 'General Post Settings', 'wtgportalmanager' ); 

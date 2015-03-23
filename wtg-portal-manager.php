@@ -1,12 +1,12 @@
 <?php         
 /*
 Plugin Name: WTG Portal Manager Beta
-Version: 0.0.10
+Version: 0.0.11
 Plugin URI: http://www.webtechglobal.co.uk
 Description: Create many portals in one WordPress site that focus on individual products or services.
 Author: WebTechGlobal
 Author URI: http://www.webtechglobal.co.uk
-Last Updated: February 2015
+Last Updated: March 2015
 Text Domain: wtgportalmanager
 Domain Path: /languages
 
@@ -38,12 +38,12 @@ if ( ( 'wp-login.php' === basename( $_SERVER['SCRIPT_FILENAME'] ) ) // Login scr
 }
               
 // package variables
-$wtgportalmanager_currentversion = '0.0.10';# to be removed, version is now in the WTGPORTALMANAGER() class 
+$wtgportalmanager_currentversion = '0.0.11';# to be removed, version is now in the WTGPORTALMANAGER() class 
 $wtgportalmanager_debug_mode = false;# to be phased out, going to use environment variables (both WP and php.ini instead)
 $wtgportalmanager_settings = get_option( 'wtgportalmanager_settings' );
 
 // go into dev mode if on test installation (if directory contains the string you will see errors and other fun stuff for geeks)               
-if( strstr( ABSPATH, 'wtgportalmanager' ) ){
+if( strstr( ABSPATH, 'OFFwtgportalmanager' ) ){
     $wtgportalmanager_debug_mode = true;     
 }               
 
@@ -83,7 +83,7 @@ require_once( WTGPORTALMANAGER_ABSPATH . 'classes/class-wtgportalmanager.php' );
 
 // call the Daddy methods here or remove some lines as a quick configuration approach...
 $WTGPORTALMANAGER = new WTGPORTALMANAGER();
-$WTGPORTALMANAGER->custom_post_types();
+//$WTGPORTALMANAGER->custom_post_types();
 
 // localization because we all love speaking a little chinese or russian or Klingon!
 // Hmm! has anyone ever translated a WP plugin in Klingon?

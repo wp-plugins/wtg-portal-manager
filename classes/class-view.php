@@ -158,20 +158,20 @@ abstract class WTGPORTALMANAGER_View {
                 $pagediscussionurl = '';
                 $pagefaqurl = '';
                 
-                if( isset( $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagereadmoreurl' ] ) ){
-                    $pagereadmeurl = '<p><a href="' . $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagereadmoreurl' ] . '" target="_blank">' . __( 'Documentation', 'wtgportalmanager') . '</a></p>';        
+                if( isset( $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagereadmoreurl' ] ) && is_string( $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagereadmoreurl' ] ) ){
+                    $pagereadmeurl = '<p><a href="' . $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagereadmoreurl' ] . '" target="_blank">' . __( 'Documentation', 'wtgpluginframework') . '</a></p>';        
                 } 
                                
-                if( isset( $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagevideourl' ] ) ){
-                    $pagevideourl = '<p><a href="' . $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagevideourl' ] . '" target="_blank">' . __( 'Video', 'wtgportalmanager') . '</a></p>';
+                if( isset( $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagevideourl' ] ) && is_string( $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagevideourl' ] ) ){
+                    $pagevideourl = '<p><a href="' . $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagevideourl' ] . '" target="_blank">' . __( 'Video', 'wtgpluginframework') . '</a></p>';
                 } 
                                
-                if( isset( $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagediscussurl' ] ) ){
-                    $pagediscussionurl = '<p><a href="' . $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagediscussurl' ] . '" target="_blank">' . __( 'Support', 'wtgportalmanager') . '</a></p>';
+                if( isset( $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagediscussurl' ] ) && is_string( $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagediscussurl' ] ) ){
+                    $pagediscussionurl = '<p><a href="' . $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagediscussurl' ] . '" target="_blank">' . __( 'Support', 'wtgpluginframework') . '</a></p>';
                 }
         
-                if( isset( $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagefaqurl' ] ) ){
-                    $pagefaqurl = '<p><a href="' . $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagefaqurl' ]  . '" target="_blank">' . __( 'FAQ', 'wtgportalmanager') . '</a></p>';
+                if( isset( $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagefaqurl' ] ) && is_string( $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagefaqurl' ] ) ){
+                    $pagefaqurl = '<p><a href="' . $this->help_array[ $page_name ][ 'pageinfo' ][ 'pagefaqurl' ]  . '" target="_blank">' . __( 'FAQ', 'wtgpluginframework') . '</a></p>';
                 }
                                 
                 // help tab sidebar
@@ -524,7 +524,7 @@ abstract class WTGPORTALMANAGER_View {
         if( $admin_page === 'wtgportalmanager' ){
             $admin_page = 'main';
         }   
-        
+         
         // view header - includes notices output and some admin side automation such as conflict prevention
         $this->WTGPORTALMANAGER->pageheader( $wtgportalmanager_menu_array[ $admin_page ]['title'], 0);
         

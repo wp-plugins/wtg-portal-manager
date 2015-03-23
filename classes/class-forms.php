@@ -353,26 +353,26 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
                     
                     // if none checked FAIL
                     if( $box_checked === 0 ) {
-                        $this->UI->create_notice( sprintf( __( 'Oops! You missed something. Please make selection for %s as it is a required option.', 'csv2post' ), $input_array['optiontitle'] ), 'error', 'Small', __( 'Required Option', 'wtgportalmanager' ) );                    
+                        $this->UI->create_notice( sprintf( __( 'Oops! You missed something. Please make selection for %s as it is a required option.', 'wtgportalmanager' ), $input_array['optiontitle'] ), 'error', 'Small', __( 'Required Option', 'wtgportalmanager' ) );                    
                         return false;                    
                     }                    
                     
                     // if not enough checked FAIL
                      if( isset( $this->minimumchecks ) && $box_checked < $this->minimumchecks ) {
-                        $this->UI->create_notice( sprintf( __( 'You have not checked enough boxes for the %s option.', 'csv2post' ), $input_array['optiontitle'] ), 'error', 'Small', __( 'Check More Boxes', 'wtgportalmanager' ) );                    
+                        $this->UI->create_notice( sprintf( __( 'You have not checked enough boxes for the %s option.', 'wtgportalmanager' ), $input_array['optiontitle'] ), 'error', 'Small', __( 'Check More Boxes', 'wtgportalmanager' ) );                    
                         return false;                    
                     }
                                 
                     // if too many checked....you guessed it FAIL
                     if( isset( $this->maximumchecks ) && $box_checked > $this->maximumchecks ) {
-                        $this->UI->create_notice( sprintf( __( 'You have checked too many boxes for the %s option.', 'csv2post' ), $input_array['optiontitle'] ), 'error', 'Small', __( 'Please Uncheck Boxes', 'wtgportalmanager' ) );                    
+                        $this->UI->create_notice( sprintf( __( 'You have checked too many boxes for the %s option.', 'wtgportalmanager' ), $input_array['optiontitle'] ), 'error', 'Small', __( 'Please Uncheck Boxes', 'wtgportalmanager' ) );                    
                         return false;                    
                     }                    
                     
                 }elseif( !isset( $_POST[ $input_name ] ) || empty( $_POST[ $input_name ] ) || in_array( $_POST[ $input_name ], $this->common_defaults ) ) {
                     
                     // arriving here indicates a required input has not been used
-                    $this->UI->create_notice( sprintf( __( 'Form incomplete because the %s is a required option.', 'csv2post' ), $input_array['optiontitle'] ), 'error', 'Small', __( 'Required Option', 'wtgportalmanager' ) );                    
+                    $this->UI->create_notice( sprintf( __( 'Form incomplete because the %s is a required option.', 'wtgportalmanager' ), $input_array['optiontitle'] ), 'error', 'Small', __( 'Required Option', 'wtgportalmanager' ) );                    
                     return false;                      
                 }
             }           
@@ -447,7 +447,7 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
                 if( isset( $this->form_val_arr[ $user_ID ][ $form_id ][ $input_name ]['disabled'] ) && $this->form_val_arr[ $user_ID ][ $form_id ][ $input_name ]['disabled'] === true ) {
                     
                     // this state indicates user hack enabled input
-                    $this->UI->create_notice( __( 'Possible security violation detected. Please discontinue your action. This event has been logged for investigation.', 'csv2post' ), 'warning', 'Small', __( 'Warning', 'wtgportalmanager' ) );                    
+                    $this->UI->create_notice( __( 'Possible security violation detected. Please discontinue your action. This event has been logged for investigation.', 'wtgportalmanager' ), 'warning', 'Small', __( 'Warning', 'wtgportalmanager' ) );                    
                     return false;    
                 }
             }    
@@ -470,7 +470,7 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
        
                         // did a hack disable the input (it is in $_POST when it should not be)
                         if( !isset( $_POST[ $input_name ] ) ) {   
-                            $this->UI->create_notice( __( 'Possible security violation. Please discontinue your action. This event has been logged for investigation.', 'csv2post' ), 'warning', 'Small', __( 'Warning', 'wtgportalmanager' ) );                    
+                            $this->UI->create_notice( __( 'Possible security violation. Please discontinue your action. This event has been logged for investigation.', 'wtgportalmanager' ), 'warning', 'Small', __( 'Warning', 'wtgportalmanager' ) );                    
                             return false;                        
                         } 
                     }
@@ -493,7 +493,7 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
                     
                     // if no match, the submitted item value was not registered when the form was parsed
                     if( $found_match === false ) {
-                        $this->UI->create_notice( __( 'WTG Portal Manager has security related concerns about a menu on the form you submitted. Please discontinue your action and contact support. This event has been logged for investigation.', 'csv2post' ), 'warning', 'Small', __( 'Warning', 'wtgportalmanager' ) );                    
+                        $this->UI->create_notice( __( 'WTG Portal Manager has security related concerns about a menu on the form you submitted. Please discontinue your action and contact support. This event has been logged for investigation.', 'wtgportalmanager' ), 'warning', 'Small', __( 'Warning', 'wtgportalmanager' ) );                    
                         return false;    
                     }
                 }                
@@ -517,7 +517,7 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
                         
                         // if one or more seletions made but no match this indicates values have been tampered with
                         if( $failed_to_match === true ) {
-                            $this->UI->create_notice( __( 'WTG CSV Exporter security has detected a possible problem with the form you submitted. Please discontinue your action and contact support.', 'csv2post' ), 'warning', 'Small', __( 'Warning', 'wtgportalmanager' ) );                    
+                            $this->UI->create_notice( __( 'WTG CSV Exporter security has detected a possible problem with the form you submitted. Please discontinue your action and contact support.', 'wtgportalmanager' ), 'warning', 'Small', __( 'Warning', 'wtgportalmanager' ) );                    
                             return false;    
                         }
                         
@@ -546,7 +546,7 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
             
                             // if one or more seletions made but no match this indicates values have been tampered with
                             if( $failed_to_match === true ) {
-                                $this->UI->create_notice( __( 'WTG CSV Exporter detected problem relating to the security of the form you submitted. Please discuss this on the WebTechGlobal Forum.', 'csv2post' ), 'error', 'Small', __( 'Something Went Wrong', 'wtgportalmanager' ) );                    
+                                $this->UI->create_notice( __( 'WTG CSV Exporter detected problem relating to the security of the form you submitted. Please discuss this on the WebTechGlobal Forum.', 'wtgportalmanager' ), 'error', 'Small', __( 'Something Went Wrong', 'wtgportalmanager' ) );                    
                                 return false;    
                             }
                         }
@@ -568,7 +568,7 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
                     
                     // if no match, the submitted item value was not registered when the form was parsed
                     if( $found_match === false ) {
-                        $this->UI->create_notice( __( 'WTG Portal Manager detected a problem and could not continue. Please try again and if it continues contact support.', 'csv2post' ), 'warning', 'Small', __( 'Warning', 'wtgportalmanager' ) );                    
+                        $this->UI->create_notice( __( 'WTG Portal Manager detected a problem and could not continue. Please try again and if it continues contact support.', 'wtgportalmanager' ), 'warning', 'Small', __( 'Warning', 'wtgportalmanager' ) );                    
                         return false;    
                     }
                 }               
@@ -578,12 +578,12 @@ class WTGPORTALMANAGER_Formbuilder extends WTGPORTALMANAGER_UI {
      
                     if( !isset( $_POST[ $input_name ] ) ) {
                        // arriving here indicates hidden input missing, a hack has removed it
-                        $this->UI->create_notice( __( 'A security matter has arisen. Please discontinue your action and contact support if this message continues to appear. The event has been logged.', 'csv2post' ), 'warning', 'Small', __( 'Warning', 'wtgportalmanager' ) );                    
+                        $this->UI->create_notice( __( 'A security matter has arisen. Please discontinue your action and contact support if this message continues to appear. The event has been logged.', 'wtgportalmanager' ), 'warning', 'Small', __( 'Warning', 'wtgportalmanager' ) );                    
                         return false;                         
                     } else {
                         // if registered value does not match value submitted, hacker has changed it
                         if( $input_array['currentvalue'] !== $_POST[ $input_name ] ) {
-                            $this->UI->create_notice( __( 'WTG Portal Manager has detected a possible hack attempt. Your activity has been logged. Please discontinue your action and contact support if this message continues to appear without any known reason.', 'csv2post' ), 'warning', 'Small', __( 'Warning', 'wtgportalmanager' ) );                    
+                            $this->UI->create_notice( __( 'WTG Portal Manager has detected a possible hack attempt. Your activity has been logged. Please discontinue your action and contact support if this message continues to appear without any known reason.', 'wtgportalmanager' ), 'warning', 'Small', __( 'Warning', 'wtgportalmanager' ) );                    
                             return false;                            
                         }
                     }

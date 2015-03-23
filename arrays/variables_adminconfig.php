@@ -1,6 +1,6 @@
 <?php
 /**
- * old admin config file, this is being phased out 
+ * old admin config file, this is to be removed
  * 
  * @package WTG Portal Manager
  * @author Ryan Bayne   
@@ -9,6 +9,4 @@
 
 // load in WordPress only
 defined( 'ABSPATH' ) || die( 'No direct script access allowed!' );
-
-$c2p_apisession_array = false;
 ?>

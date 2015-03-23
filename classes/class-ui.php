@@ -524,55 +524,6 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
     }
     
     /**
-    * Form menu wrapped in WP admin styled table row
-    * 
-    * values are numeric, items are numeric
-    * 
-    * @author Ryan R. Bayne
-    * @package WTG Portal Manager
-    * @since 0.0.1
-    * @version 1.0
-    * 
-    * @param mixed $title
-    * @param mixed $name
-    * @param mixed $id
-    * @param mixed $current
-    * @param mixed $validation
-    */
-    public function option_menu_datasources( $title = 'Data Source', $name = 'datasource', $id = 'datasource', $current = false ){
-        self::register_input_validation( $title, $name, $id, 'numeric' );// stored data is used to apply correct validation during processing
-        
-        global $wpdb;
-        $query_results = $this->DB->selectwherearray( $wpdb->c2psources, 'sourceid = sourceid', 'sourceid', '*' );?>
-        <!-- Option Start -->        
-        <tr valign="top">
-            <th scope="row"><label for="<?php echo $id; ?>"><?php echo $title; ?></label></th>
-            <td>            
-                <select name="<?php echo $name;?>" id="<?php echo $id;?>">
-                    <?php                  
-                    $selected = '';            
-                    foreach( $query_results as $key => $source_array ){
-                        
-                        if( $source_array['sourceid'] == $current){
-                            $selected = 'selected="selected"';
-                        } 
-                        
-                        // create item name
-                        $item_name = $source_array['sourceid'];
-                        if( isset( $source_array['name'] ) ) {
-                            $item_name . ' - ' . $source_array['name'];
-                        } 
-                        
-                        echo '<option '.$selected.' value="'.$source_array['sourceid'].'">' . $item_name . '</option>';    
-                    }
-                    ?>
-                </select>                  
-            </td>
-        </tr>
-        <!-- Option End --><?php         
-    }    
-    
-    /**
     * outputs a single html checkbox with label
     * 
     * wrap in <fieldset><legend class="screen-reader-text"><span>Membership</span></legend></fieldset>
@@ -1119,15 +1070,15 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
     public function get_notice_array() {
         $a = get_option( 'wtgportalmanager_notifications' );
        
-        $c2p_notice_array = maybe_unserialize( $a);
-        if(!is_array( $c2p_notice_array ) ){
+        $wtgportalmanager_notice_array = maybe_unserialize( $a);
+        if(!is_array( $wtgportalmanager_notice_array ) ){
             return array();    
         }
         
         // delete some expired admin notices
-        if( isset( $c2p_notice_array['admin'] ) )
+        if( isset( $wtgportalmanager_notice_array['admin'] ) )
         {
-            foreach( $c2p_notice_array['admin'] as $key => $notice){
+            foreach( $wtgportalmanager_notice_array['admin'] as $key => $notice){
                 
                 if( isset( $notice['created'] ) )
                 {
@@ -1135,20 +1086,20 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
                     
                     if( $projected < time() )
                     {
-                        unset( $c2p_notice_array['admin'][$key] );    
+                        unset( $wtgportalmanager_notice_array['admin'][$key] );    
                     }                                               
                 }
                 else
                 {       
-                    unset( $c2p_notice_array['admin'][$key] );
+                    unset( $wtgportalmanager_notice_array['admin'][$key] );
                 }
             }
         }
       
         // delete some expired user notices
-        if( isset( $c2p_notice_array['users'] ) ){
+        if( isset( $wtgportalmanager_notice_array['users'] ) ){
  
-            foreach( $c2p_notice_array['users'] as $owner_id => $owners_notices){
+            foreach( $wtgportalmanager_notice_array['users'] as $owner_id => $owners_notices){
                 
                 foreach( $owners_notices as $key => $notice)
                 {
@@ -1158,24 +1109,24 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
                         
                         if( $projected < time() )
                         {
-                            unset( $c2p_notice_array['users'][$key] );    
+                            unset( $wtgportalmanager_notice_array['users'][$key] );    
                         }                                               
                     }
                     else
                     {
-                        unset( $c2p_notice_array['users'][$key] );
+                        unset( $wtgportalmanager_notice_array['users'][$key] );
                     }
                 }
             }   
         }     
            
         // any notices unset due to expiry will be reflected in update during display procedure        
-        return $c2p_notice_array;    
+        return $wtgportalmanager_notice_array;    
     }
     
     public function update_notice_array() {
-        global $c2p_notice_array;      
-        return update_option( 'wtgportalmanager_notifications',maybe_serialize( $c2p_notice_array ) );    
+        global $wtgportalmanager_notice_array;      
+        return update_option( 'wtgportalmanager_notifications',maybe_serialize( $wtgportalmanager_notice_array ) );    
     }    
      
     /**
@@ -1254,7 +1205,7 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
     * @param mixed $sensitive
     */
     public function create_notice( $message, $type = 'info', $size = 'Small', $title = false, $sensitive = false, $helpurl = false ){
-        global $c2p_notice_array, $current_user;
+        global $wtgportalmanager_notice_array, $current_user;
                 
         // requires user to be logged in as the first security step
         // return if no current user, this allows us to use create_notice() in functions which are used in both manual and automated procedures                             
@@ -1267,27 +1218,27 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
         // another security step is to add the notice to the notice array with user ID which is checked before displaying
         if( $sensitive === false ) {   
             
-            $c2p_notice_array['notices'][$current_user->ID][$key]['sensitive'] = false;
-            $c2p_notice_array['notices'][$current_user->ID][$key]['message'] = $message;
-            $c2p_notice_array['notices'][$current_user->ID][$key]['type'] = $type;
-            $c2p_notice_array['notices'][$current_user->ID][$key]['size'] = $size;
-            $c2p_notice_array['notices'][$current_user->ID][$key]['title'] = $title; 
-            $c2p_notice_array['notices'][$current_user->ID][$key]['created'] = time();
-            $c2p_notice_array['notices'][$current_user->ID][$key]['helpurl'] = $helpurl;
+            $wtgportalmanager_notice_array['notices'][$current_user->ID][$key]['sensitive'] = false;
+            $wtgportalmanager_notice_array['notices'][$current_user->ID][$key]['message'] = $message;
+            $wtgportalmanager_notice_array['notices'][$current_user->ID][$key]['type'] = $type;
+            $wtgportalmanager_notice_array['notices'][$current_user->ID][$key]['size'] = $size;
+            $wtgportalmanager_notice_array['notices'][$current_user->ID][$key]['title'] = $title; 
+            $wtgportalmanager_notice_array['notices'][$current_user->ID][$key]['created'] = time();
+            $wtgportalmanager_notice_array['notices'][$current_user->ID][$key]['helpurl'] = $helpurl;
              
         } elseif( $sensitive === true ) {
             
             // another security measure which is optional is to make a sensitive notice which is stored in the 
             // applicable users meta rather than making it part of an array which is printed on-screen
             // then we can display the notice anywhere
-            $c2p_notice_array['users'][$current_user->ID][$key]['sensitive'] = false;
+            $wtgportalmanager_notice_array['users'][$current_user->ID][$key]['sensitive'] = false;
             
             # to be complete, this procedure will store the notice in user meta with the $key being used in meta_key
             # even when we start using a database table to store all notices, we will do this to avoid that table
             # holding sensitive data. Instead we will try to group subscriber/customer data where some already exists.                         
         }
 
-        return $this->update_notice_array( $c2p_notice_array );
+        return $this->update_notice_array( $wtgportalmanager_notice_array );
     }
     
     /**
@@ -1312,7 +1263,7 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
     * or there is an expiry. 
     */
     public function create_prompt() {
-        ## $c2p_notice_array['prompts'][$owner][$key]['message'] = $message;    
+        ## $wtgportalmanager_notice_array['prompts'][$owner][$key]['message'] = $message;    
     }
     
     /**
@@ -1322,7 +1273,7 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
     * b) client actions within their account i.e. invoice request, can create a message for the lead developer of clients project 
     */
     public function create_message() {
-        ## $c2p_notice_array['messages'][$owner][$key]['message'] = $message;    
+        ## $wtgportalmanager_notice_array['messages'][$owner][$key]['message'] = $message;    
     }
     
     public function display_all() {
@@ -1330,13 +1281,13 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
     }
     
     public function display_users_notices() {
-        global $c2p_notice_array, $current_user, $wtgportalmanager_settings;
+        global $wtgportalmanager_notice_array, $current_user, $wtgportalmanager_settings;
         
-        $c2p_notice_array = $this->get_notice_array();
+        $wtgportalmanager_notice_array = $this->get_notice_array();
         
-        if(!isset( $c2p_notice_array['notices'][$current_user->ID] ) ){return;}
+        if(!isset( $wtgportalmanager_notice_array['notices'][$current_user->ID] ) ){return;}
  
-        foreach( $c2p_notice_array['notices'][$current_user->ID] as $key => $owners_notices){
+        foreach( $wtgportalmanager_notice_array['notices'][$current_user->ID] as $key => $owners_notices){
 
             if( isset( $owners_notices['sensitive'] ) && $owners_notices['sensitive'] === true) {
                 # to be complete - this will be used for sensitive information 
@@ -1350,10 +1301,10 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
             }   
 
             // users notices have been displayed, unset to prevent second display
-            unset( $c2p_notice_array['notices'][$current_user->ID] );
+            unset( $wtgportalmanager_notice_array['notices'][$current_user->ID] );
         }
                                        
-        $this->update_notice_array( $c2p_notice_array );            
+        $this->update_notice_array( $wtgportalmanager_notice_array );            
     }
         
     /**
@@ -1429,7 +1380,7 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
     * @deprecated please use other functions in the Notice class
     */
     public function n_depreciated( $title, $mes, $style, $size, $atts = array() ){
-        global $c2p_notice_array;
+        global $wtgportalmanager_notice_array;
                     
         extract( shortcode_atts( array( 
             'url' => false,
@@ -1448,7 +1399,7 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
         }
                        
         // if return wanted or $side == public (used to bypass is_admin() check)
-        // this allows the notice to be printed within content where the function is called rather than within the $c2p_notice_array loop
+        // this allows the notice to be printed within content where the function is called rather than within the $wtgportalmanager_notice_array loop
         if( $output == 'return' || $output == 'public' ){
             return $this->notice_display_depreciated( $style, $url, $size, $title, $mes, $clickable, $persistent = false );
         }
@@ -1459,30 +1410,30 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
         }
                 
         // arriving here means normal, most common output to the backend of WordPress
-        $c2p_notice_array = $this->persistentnotifications_array();
+        $wtgportalmanager_notice_array = $this->persistentnotifications_array();
         
         // set next array key value
         $next_key = 0;
 
         // determine next array key
-        if( isset( $c2p_notice_array['notifications'] ) ){    
-            $next_key = WTGPORTALMANAGER::get_array_nextkey( $c2p_notice_array['notifications'] );
+        if( isset( $wtgportalmanager_notice_array['notifications'] ) ){    
+            $next_key = WTGPORTALMANAGER::get_array_nextkey( $wtgportalmanager_notice_array['notifications'] );
         }    
                        
         // add new message to the notifications array
         // this will be output during the current page loading. The notification will show once unless persistent is set to true
-        $c2p_notice_array['notifications'][$next_key]['message'] = $mes;
-        $c2p_notice_array['notifications'][$next_key]['type'] = $style;
-        $c2p_notice_array['notifications'][$next_key]['size'] = $size;
-        $c2p_notice_array['notifications'][$next_key]['title'] = $title;
-        $c2p_notice_array['notifications'][$next_key]['helpurl'] = $url; 
-        $c2p_notice_array['notifications'][$next_key]['output'] = $output;
-        $c2p_notice_array['notifications'][$next_key]['audience'] = $audience;
-        $c2p_notice_array['notifications'][$next_key]['user_mes'] = $user_mes;
-        $c2p_notice_array['notifications'][$next_key]['side'] = $side;
-        $c2p_notice_array['notifications'][$next_key]['clickable'] = $clickable;
+        $wtgportalmanager_notice_array['notifications'][$next_key]['message'] = $mes;
+        $wtgportalmanager_notice_array['notifications'][$next_key]['type'] = $style;
+        $wtgportalmanager_notice_array['notifications'][$next_key]['size'] = $size;
+        $wtgportalmanager_notice_array['notifications'][$next_key]['title'] = $title;
+        $wtgportalmanager_notice_array['notifications'][$next_key]['helpurl'] = $url; 
+        $wtgportalmanager_notice_array['notifications'][$next_key]['output'] = $output;
+        $wtgportalmanager_notice_array['notifications'][$next_key]['audience'] = $audience;
+        $wtgportalmanager_notice_array['notifications'][$next_key]['user_mes'] = $user_mes;
+        $wtgportalmanager_notice_array['notifications'][$next_key]['side'] = $side;
+        $wtgportalmanager_notice_array['notifications'][$next_key]['clickable'] = $clickable;
                           
-        $this->update_persistentnotifications_array( $c2p_notice_array );
+        $this->update_persistentnotifications_array( $wtgportalmanager_notice_array );
     } 
     
     /**
@@ -1516,7 +1467,7 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
     * @deprecated do not use this function
     */
     public function notice_depreciated( $message, $type = 'success', $size = 'Extra', $title = false, $helpurl = 'www.webtechglobal.co.uk', $output_type = 'echo', $persistent = false, $clickable = false, $user_type = false ){
-        global $c2p_notice_array;
+        global $wtgportalmanager_notice_array;
         if( is_admin() || $output_type == 'public' ){
             
             // change unexpected values into expected values (for flexability and to help avoid fault)
@@ -1532,32 +1483,32 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
             }else{
                 // establish next array key
                 $next_key = 0;
-                if( isset( $c2p_notice_array['notifications'] ) ){
-                    $next_key = WTGPORTALMANAGER::get_array_nextkey( $c2p_notice_array['notifications'] );
+                if( isset( $wtgportalmanager_notice_array['notifications'] ) ){
+                    $next_key = WTGPORTALMANAGER::get_array_nextkey( $wtgportalmanager_notice_array['notifications'] );
                 }
                 
                 // add new message to the notifications array
-                $c2p_notice_array['notifications'][$next_key]['message'] = $message;
-                $c2p_notice_array['notifications'][$next_key]['type'] = $type;
-                $c2p_notice_array['notifications'][$next_key]['size'] = $size;
-                $c2p_notice_array['notifications'][$next_key]['title'] = $title;
-                $c2p_notice_array['notifications'][$next_key]['helpurl'] = $helpurl; 
-                $c2p_notice_array['notifications'][$next_key]['clickable'] = $clickable; 
+                $wtgportalmanager_notice_array['notifications'][$next_key]['message'] = $message;
+                $wtgportalmanager_notice_array['notifications'][$next_key]['type'] = $type;
+                $wtgportalmanager_notice_array['notifications'][$next_key]['size'] = $size;
+                $wtgportalmanager_notice_array['notifications'][$next_key]['title'] = $title;
+                $wtgportalmanager_notice_array['notifications'][$next_key]['helpurl'] = $helpurl; 
+                $wtgportalmanager_notice_array['notifications'][$next_key]['clickable'] = $clickable; 
                           
-                $this->update_persistentnotifications_array( $c2p_notice_array );       
+                $this->update_persistentnotifications_array( $wtgportalmanager_notice_array );       
             }
         } 
     }    
     
     /**                                              
-    * Outputs the contents of $c2p_notice_array, used in WTGPORTALMANAGER::pageheader().
+    * Outputs the contents of $wtgportalmanager_notice_array, used in WTGPORTALMANAGER::pageheader().
     * Will hold new and none persistent notifications. May also hold persistent. 
     */
     public function output_depreciated() {
-        $c2p_notice_array = self::persistentnotifications_array();    
-        if( isset( $c2p_notice_array['notifications'] ) ){
+        $wtgportalmanager_notice_array = self::persistentnotifications_array();    
+        if( isset( $wtgportalmanager_notice_array['notifications'] ) ){
                                                         
-            foreach( $c2p_notice_array['notifications'] as $key => $notice){
+            foreach( $wtgportalmanager_notice_array['notifications'] as $key => $notice){
                                 
                 // persistent notices are handled by another function as the output is different
                 if(!isset( $notice['persistent'] ) || $notice['persistent'] != false ){
@@ -1575,11 +1526,11 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
                     echo $this->notice_display_depreciated( $notice['type'], $notice['helpurl'], $notice['size'], $notice['title'], $notice['message'], $notice['clickable'], $notice['persistent'], $notice['id'] );                                               
                 
                     // notice has been displayed so we now removed it
-                    unset( $c2p_notice_array['notifications'][$key] );
+                    unset( $wtgportalmanager_notice_array['notifications'][$key] );
                 }
             }
                                
-            $this->update_persistentnotifications_array( $c2p_notice_array );
+            $this->update_persistentnotifications_array( $wtgportalmanager_notice_array );
         }  
     }
     
@@ -1614,10 +1565,8 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
      * @return string New admin footer content
      */
     public function _admin_footer_text( $content ) {
-        global $c2p_is_free;
-        $content .= ' &bull; ' . __( 'Thank you for using <a href="http://webtechglobal.co.uk/wtgportalmanager/">WTG Portal Manager</a>.', 'wtgportalmanager' );
-        // FREE EDITIONS ONLY $content .= ' ' . sprintf( __( 'Support the plugin with your <a href="%s">donation</a>!', 'wtgportalmanager' ), 'http://webtechglobal.co.uk/donate/' );
-        return $content;
+        //$content .= ' &bull; ' . __( 'Thank you for using <a href="http://webtechglobal.co.uk/wtgportalmanager/">WTG Portal Manager</a>.', 'wtgportalmanager' );
+        return '';
     } 
     
     /**
