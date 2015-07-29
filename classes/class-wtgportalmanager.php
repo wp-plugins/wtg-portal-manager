@@ -509,19 +509,19 @@ class WTGPORTALMANAGER {
         if( isset( $_GET['cat'] ) && is_numeric( $_GET['cat'] ) ) 
         {
             // we will get a portal id if meta record contains category ID and "maincategory" as the key                  
-            $portal_id = $WTGPORTALMANAGER_DB->get_value( 'webtechglobal_portal_id', $wpdb->prefix . 'webtechglobal_portalmeta', "meta_key = 'maincategory' AND meta_value = '"  . $_GET['cat'] . "'" ); 
-            if( $portal_id && is_numeric( $portal_id ) ) 
+            $project_id = $WTGPORTALMANAGER_DB->get_value( 'project_id', $wpdb->prefix . 'webtechglobal_portalmeta', "meta_key = 'maincategory' AND meta_value = '"  . $_GET['cat'] . "'" ); 
+            if( $project_id && is_numeric( $project_id ) ) 
             {   
-                define( "WTGPORTALMANAGER_PUBLICPORTALID", $portal_id );  
+                define( "WTGPORTALMANAGER_PUBLICPORTALID", $project_id );  
                 $content_type = 'maincategory';// WTG Portal Manager can now apply a primary/main category treatment whatever that is to be   
             } 
             else
             {   
                 // do the same as above only this time we are looking for sub-categories which may be treated different with a portal
-                $portal_id = $WTGPORTALMANAGER_DB->get_value( 'webtechglobal_portal_id', $wpdb->prefix . 'webtechglobal_portalmeta', "meta_key = 'subcategory' AND meta_value = '"  . $_GET['cat'] . "'" );    
-                if( $portal_id && is_numeric( $portal_id ) ) 
+                $project_id = $WTGPORTALMANAGER_DB->get_value( 'project_id', $wpdb->prefix . 'webtechglobal_portalmeta', "meta_key = 'subcategory' AND meta_value = '"  . $_GET['cat'] . "'" );    
+                if( $project_id && is_numeric( $project_id ) ) 
                 {
-                    define( "WTGPORTALMANAGER_PUBLICPORTALID" , $portal_id );
+                    define( "WTGPORTALMANAGER_PUBLICPORTALID" , $project_id );
                     $content_type = 'subcategory';// WTG Portal Manager can now apply a primary/main category treatment whatever that is to be   
                 }                    
             }
@@ -531,10 +531,10 @@ class WTGPORTALMANAGER {
             // using post ID we can get content type (from meta_key) and portal ID
             // must keep an eye on this approach because it assumes a post is assigned to one portal 
             // created task on WebTechGlobal for checks to be done and optional post meta alternative to be added
-            $portalmeta_row = $WTGPORTALMANAGER_DB->selectrow( $wpdb->prefix . 'webtechglobal_portalmeta', "meta_value = '$post_id'", 'webtechglobal_portal_id, meta_key' );
+            $portalmeta_row = $WTGPORTALMANAGER_DB->selectrow( $wpdb->prefix . 'webtechglobal_portalmeta', "meta_value = '$post_id'", 'project_id, meta_key' );
  
-            if( is_numeric( $portalmeta_row->webtechglobal_portal_id ) ) {
-                define( "WTGPORTALMANAGER_PUBLICPORTALID", $portalmeta_row->webtechglobal_portal_id );
+            if( is_numeric( $portalmeta_row->project_id ) ) {
+                define( "WTGPORTALMANAGER_PUBLICPORTALID", $portalmeta_row->project_id );
             }
         }  
   
@@ -865,7 +865,7 @@ class WTGPORTALMANAGER {
      public function load_admin_page() { 
             
         // set current active portal
-        if(!defined( "WTGPORTALMANAGER_ADMINCURRENT" ) ){define( "WTGPORTALMANAGER_ADMINCURRENT", self::get_active_portal_id() );}
+        if(!defined( "WTGPORTALMANAGER_ADMINCURRENT" ) ){define( "WTGPORTALMANAGER_ADMINCURRENT", self::get_active_project_id() );}
 
         // remove "wtgportalmanager_" from page value in URL which leaves the page name as used in the menu array
         $page = 'main';
@@ -3059,16 +3059,16 @@ class WTGPORTALMANAGER {
     */
     public function insertportal( $portal_name, $portal_description, $portal_menu_id ) {
         global $wpdb;
-        $new_portal_id = $this->DB->insert( $wpdb->webtechglobal_portals, array( 'portalname' => $portal_name ) );   
-        if( !is_numeric( $new_portal_id ) ) {
+        $new_project_id = $this->DB->insert( $wpdb->webtechglobal_projects, array( 'projectname' => $portal_name ) );   
+        if( !is_numeric( $new_project_id ) ) {
             return false;    
         }
 
         // we have a new portal id - insert portal meta
-        $this->add_portal_meta( $new_portal_id, 'description', $portal_description, true );
-        $this->add_portal_meta( $new_portal_id, 'mainmenu', $portal_menu_id, true );
+        $this->add_portal_meta( $new_project_id, 'description', $portal_description, true );
+        $this->add_portal_meta( $new_project_id, 'mainmenu', $portal_menu_id, true );
         
-        return $new_portal_id;
+        return $new_project_id;
     } 
     
     /**
@@ -3079,9 +3079,9 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function get_portal_name( $portal_id ) {
+    public function get_portal_name( $project_id ) {
         global $wpdb;
-        return $this->DB->get_value( 'portalname', $wpdb->webtechglobal_portals, "portal_id = $portal_id" );
+        return $this->DB->get_value( 'projectname', $wpdb->webtechglobal_projects, "project_id = $project_id" );
     }    
     
     /**
@@ -3092,8 +3092,8 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function get_portal_mainmenu_id( $portal_id ) {
-        return get_metadata( 'webtechglobal_portal', $portal_id, 'mainmenu', true );
+    public function get_portal_mainmenu_id( $project_id ) {
+        return get_metadata( 'webtechglobal_portal', $project_id, 'mainmenu', true );
     }   
      
     /**
@@ -3104,8 +3104,8 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function get_portal_description( $portal_id ) {
-        return get_metadata( 'webtechglobal_portal', $portal_id, 'description', true );
+    public function get_portal_description( $project_id ) {
+        return get_metadata( 'webtechglobal_portal', $project_id, 'description', true );
     }
     
     /**
@@ -3118,7 +3118,7 @@ class WTGPORTALMANAGER {
     */
     public function get_portals() {
         global $wpdb;
-        return $this->DB->selectwherearray( $wpdb->webtechglobal_portals, null, 'portal_id', '*', 'ARRAY_A' );
+        return $this->DB->selectwherearray( $wpdb->webtechglobal_projects, null, 'project_id', '*', 'ARRAY_A' );
     }
     
     /**
@@ -3129,8 +3129,8 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function activate_portal( $portal_id, $user_id ) {
-        return update_user_meta( $user_id, 'wtgportalmanager_activeportal', $portal_id );
+    public function activate_portal( $project_id, $user_id ) {
+        return update_user_meta( $user_id, 'wtgportalmanager_activeportal', $project_id );
     }
 
     /**
@@ -3141,7 +3141,7 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function get_active_portal_id() {
+    public function get_active_project_id() {
         return get_user_meta( get_current_user_id(), 'wtgportalmanager_activeportal', true );
     }
     
@@ -3153,8 +3153,8 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function create_page_relationship( $portal_id, $page_id ) {
-        return self::add_portal_meta( $portal_id, 'page', $page_id, false );
+    public function create_page_relationship( $project_id, $page_id ) {
+        return self::add_portal_meta( $project_id, 'page', $page_id, false );
     }
     
     /**
@@ -3166,9 +3166,9 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function update_page_purpose( $portal_id, $page_id, $purpose ) {
+    public function update_page_purpose( $project_id, $page_id, $purpose ) {
         update_post_meta( $page_id, 'portalpurpose', $purpose, null );
-        return self::update_portal_meta( $portal_id, 'pagepurpose' . $page_id, $page_id, false );
+        return self::update_portal_meta( $project_id, 'pagepurpose' . $page_id, $page_id, false );
     }
     
     /**
@@ -3179,8 +3179,8 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function get_portal_pages( $portal_id ) {
-        return get_metadata( 'webtechglobal_portal', $portal_id, 'page', false );
+    public function get_portal_pages( $project_id ) {
+        return get_metadata( 'webtechglobal_portal', $project_id, 'page', false );
     }
     
     /**
@@ -3191,8 +3191,8 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function update_main_menu( $portal_id, $menu_id ) {
-        return update_metadata( 'webtechglobal_portal', $portal_id, 'mainmenu', $menu_id );
+    public function update_main_menu( $project_id, $menu_id ) {
+        return update_metadata( 'webtechglobal_portal', $project_id, 'mainmenu', $menu_id );
     }    
     
     /**
@@ -3203,8 +3203,8 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function update_main_category( $portal_id, $menu_id ) {
-        return update_metadata( 'webtechglobal_portal', $portal_id, 'maincategory', $menu_id );
+    public function update_main_category( $project_id, $menu_id ) {
+        return update_metadata( 'webtechglobal_portal', $project_id, 'maincategory', $menu_id );
     }
     
     /**
@@ -3216,8 +3216,8 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function add_portal_subcategory( $portal_id, $category_id ) {
-        add_metadata( 'webtechglobal_portal', $portal_id, 'subcategory', $category_id, false );
+    public function add_portal_subcategory( $project_id, $category_id ) {
+        add_metadata( 'webtechglobal_portal', $project_id, 'subcategory', $category_id, false );
     }
 
     /**
@@ -3228,8 +3228,8 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function get_portal_maincategory_id( $portal_id ) {
-        return get_metadata( 'webtechglobal_portal', $portal_id, 'maincategory', true );
+    public function get_portal_maincategory_id( $project_id ) {
+        return get_metadata( 'webtechglobal_portal', $project_id, 'maincategory', true );
     }
     
     /**
@@ -3240,8 +3240,8 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function get_portal_subcategories( $portal_id ) {
-        return get_metadata( 'webtechglobal_portal', $portal_id, 'subcategory', false );    
+    public function get_portal_subcategories( $project_id ) {
+        return get_metadata( 'webtechglobal_portal', $project_id, 'subcategory', false );    
     }
     
     /**
@@ -3278,7 +3278,7 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function get_portal_sidebars( $portal_id ) {
+    public function get_portal_sidebars( $project_id ) {
     
     }
     
@@ -3290,12 +3290,12 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0             
     * 
-    * @param mixed $portal_id
+    * @param mixed $project_id
     * @param mixed $sidebar_position_id is the hardcoded ID in sidebar.php OR if using posts meta method, pass the post meta key
     * @param mixed $registered_sidebar_id is the ID of the sidebar from $wp_registered_sidebars
     */
-    public function set_sidebar_relationship( $portal_id, $sidebar_position_id, $registered_sidebar_id ) {
-        return update_metadata( 'webtechglobal_portal', $portal_id, $sidebar_position_id, $registered_sidebar_id, false );
+    public function set_sidebar_relationship( $project_id, $sidebar_position_id, $registered_sidebar_id ) {
+        return update_metadata( 'webtechglobal_portal', $project_id, $sidebar_position_id, $registered_sidebar_id, false );
     }
     
     /**
@@ -3308,8 +3308,8 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function get_dynamicsidebar_id( $portal_id, $sidebarposition_id ) {
-        return get_metadata( 'webtechglobal_portal', $portal_id, $sidebarposition_id, true );    
+    public function get_dynamicsidebar_id( $project_id, $sidebarposition_id ) {
+        return get_metadata( 'webtechglobal_portal', $project_id, $sidebarposition_id, true );    
     }
     
     /**
@@ -3366,7 +3366,7 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function update_portals_twitter_api( $portal_id, $consumer_key, $consumer_secret, $access_token, $token_secret, $screenname ) {
+    public function update_portals_twitter_api( $project_id, $consumer_key, $consumer_secret, $access_token, $token_secret, $screenname ) {
         $meta_value_array = array(
             'consumer_key' => $consumer_key,
             'consumer_secret' => $consumer_secret,
@@ -3374,7 +3374,7 @@ class WTGPORTALMANAGER {
             'token_secret' => $token_secret, 
             'screenname' => $screenname // aka users_timeline
         );
-        return update_metadata( 'webtechglobal_portal', $portal_id, 'twitterapi', $meta_value_array );    
+        return update_metadata( 'webtechglobal_portal', $project_id, 'twitterapi', $meta_value_array );    
     }
     
     /**
@@ -3385,8 +3385,8 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function add_portal_meta( $portal_id, $meta_key, $meta_value, $unique = true ) {
-        return add_metadata( 'webtechglobal_portal', $portal_id, $meta_key, $meta_value, $unique );    
+    public function add_portal_meta( $project_id, $meta_key, $meta_value, $unique = true ) {
+        return add_metadata( 'webtechglobal_portal', $project_id, $meta_key, $meta_value, $unique );    
     }
     
     /**
@@ -3397,8 +3397,8 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function update_portal_meta( $portal_id, $meta_key, $meta_value, $previous_value = null ) {
-        return update_metadata( 'webtechglobal_portal', $portal_id, $meta_key, $meta_value, $previous_value );
+    public function update_portal_meta( $project_id, $meta_key, $meta_value, $previous_value = null ) {
+        return update_metadata( 'webtechglobal_portal', $project_id, $meta_key, $meta_value, $previous_value );
     }
     
     /**
@@ -3409,12 +3409,12 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function update_portals_forumsettings( $portal_id, $portal_switch, $main_forum_id ) {
+    public function update_portals_forumsettings( $project_id, $portal_switch, $main_forum_id ) {
         $meta_value_array = array(
             'portal_switch' => $portal_switch,
             'main_forum_id' => $main_forum_id
         );
-        return update_metadata( 'webtechglobal_portal', $portal_id, 'forumsettings', $meta_value_array );    
+        return update_metadata( 'webtechglobal_portal', $project_id, 'forumsettings', $meta_value_array );    
     }
     
     /**
@@ -3425,8 +3425,8 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     */
-    public function get_portal_meta( $portal_id, $meta_key, $single = true ) {
-        return get_metadata( 'webtechglobal_portal', $portal_id, $meta_key, $single );
+    public function get_portal_meta( $project_id, $meta_key, $single = true ) {
+        return get_metadata( 'webtechglobal_portal', $project_id, $meta_key, $single );
     }
     
     /**
@@ -3546,13 +3546,13 @@ class WTGPORTALMANAGER {
     * @since 0.0.1
     * @version 1.0
     * 
-    * @param mixed $portal_id
+    * @param mixed $project_id
     * @param mixed $portal_name
     * @param mixed $page_purpose array( 'programmingpurpose' => 'main', 'visiblepurpose' => 'Home' )
     * @param mixed $parent_id
     * @return WP_Error
     */
-    public function create_portal_page( $portal_id, $portal_name, $page_purpose = array(), $parent_id = null ) {
+    public function create_portal_page( $project_id, $portal_name, $page_purpose = array(), $parent_id = null ) {
         // build custom content per page purpose
         switch ( $page_purpose['programmingpurpose'] ) {
            case 'main':// home page for the entire portal
@@ -3581,10 +3581,10 @@ class WTGPORTALMANAGER {
         $new_portal_page_id = wp_insert_post( $post_array ); 
         
         // add page to portal meta table as a "page"
-        self::add_portal_meta( $portal_id, 'page', $new_portal_page_id, true );   
+        self::add_portal_meta( $project_id, 'page', $new_portal_page_id, true );   
         
         // add both portal meta and meta to the page (post meta) itself for establishing the pages purpose within the portal
-        self::update_page_purpose( $portal_id, $new_portal_page_id, $page_purpose['programmingpurpose'] );# function updates both post and portal meta tables
+        self::update_page_purpose( $project_id, $new_portal_page_id, $page_purpose['programmingpurpose'] );# function updates both post and portal meta tables
         
         return $new_portal_page_id;
     }

@@ -46,10 +46,10 @@ class WTGPORTALMANAGER_Install {
         add_action( 'switch_blog', array( $this, 'register_webtechglobal_log_table' ) );
         $this->register_webtechglobal_log_table(); // register tables manually as the hook may have been missed      
 
-        // register webtechglobal_portals table
-        add_action( 'init', array( $this, 'register_webtechglobal_portals_table' ) );
-        add_action( 'switch_blog', array( $this, 'register_webtechglobal_portals_table' ) );
-        $this->register_webtechglobal_portals_table(); // register tables manually as the hook may have been missed             
+        // register webtechglobal_projects table
+        add_action( 'init', array( $this, 'register_webtechglobal_projects_table' ) );
+        add_action( 'switch_blog', array( $this, 'register_webtechglobal_projects_table' ) );
+        $this->register_webtechglobal_projects_table(); // register tables manually as the hook may have been missed             
           
         // register webtechglobal_portalmeta table
         add_action( 'init', array( $this, 'register_webtechglobal_portalmeta_table' ) );
@@ -63,13 +63,15 @@ class WTGPORTALMANAGER_Install {
         global $wpdb;
         $wpdb->webtechglobal_log = "{$wpdb->prefix}webtechglobal_log";
     }    
-    
-    // portals table - set $wpdb
-    function register_webtechglobal_portals_table() {
+
+    // projects table - set $wpdb
+    // this table is being used in multiple WTG plugins for easy integration
+    // changes must be reflected in all plugins
+    function register_webtechglobal_projects_table() {
         global $wpdb;
-        $wpdb->webtechglobal_portals = "{$wpdb->prefix}webtechglobal_portals";
-    }    
-    
+        $wpdb->webtechglobal_projects = "{$wpdb->prefix}webtechglobal_projects";
+    }
+        
     // portals meta table - set $wpdb
     function register_webtechglobal_portalmeta_table() {
         global $wpdb;
@@ -123,14 +125,26 @@ class WTGPORTALMANAGER_Install {
         // action - what was being attempted, if known 
         // priority - low|medium|high (low should be default, medium if the log might help improve the plugin or user experience or minor PHP errors, high for critical errors especially security related
         // triga - (trigger but that word is taking) not sure we need this       
-                     
-        // webtechglobal_portals
-        $sql_create_table = "CREATE TABLE {$wpdb->webtechglobal_portals} (portal_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,portalname varchar(250) DEFAULT NULL,PRIMARY KEY (portal_id),UNIQUE KEY `portalname_UNIQUE` (`portalname`) ) $charset_collate; ";
+        
+        // webtechglobal_projects
+        $sql_create_table = "CREATE TABLE {$wpdb->webtechglobal_projects} (project_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,projectname varchar(250) DEFAULT NULL,description mediumtext,mainmanager varchar(45) DEFAULT NULL,phase varchar(45) DEFAULT NULL, archived tinyint(1) unsigned NOT NULL DEFAULT '0',PRIMARY KEY (project_id),UNIQUE KEY `projectname_UNIQUE` (`projectname`) ) $charset_collate; ";
         dbDelta( $sql_create_table );   
-
+        // project_id 
+        // timestamp
+        // projectname
+        // description
+        // mainmanager
+        // phase    
+        // archived (boolean) - archived projects wont show on most interfaces
+ 
         // webtechglobal_portalmeta
-        $sql_create_table = "CREATE TABLE {$wpdb->webtechglobal_portalmeta} (meta_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,webtechglobal_portal_id bigint(20) unsigned NOT NULL DEFAULT 0,meta_key varchar(255) DEFAULT NULL,meta_value longtext,PRIMARY KEY (meta_id),KEY webtechglobal_portal_id (webtechglobal_portal_id),KEY meta_key (meta_key) ) $charset_collate; ";
+        $sql_create_table = "CREATE TABLE {$wpdb->webtechglobal_portalmeta} (meta_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,project_id bigint(20) unsigned NOT NULL DEFAULT 0,meta_key varchar(255) DEFAULT NULL,meta_value longtext,PRIMARY KEY (meta_id),KEY project_id (project_id),KEY meta_key (meta_key) ) $charset_collate; ";
         dbDelta( $sql_create_table );
+        // meta_id 
+        // project_id 
+        // meta_key 
+        // meta_value 
+        
     }
                                        
     /**

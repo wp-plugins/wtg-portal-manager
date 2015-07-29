@@ -5,7 +5,7 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Tags: portal, portal manager, product portal, service portal, web portal, web portals
 Requires at least: 3.8.0
-Tested up to: 4.1.0
+Tested up to: 4.2.2
 Stable tag: trunk
 
 WTG Portal Manager assists us in managing related content for a product, service or event. 
@@ -87,9 +87,18 @@ Please update this plugin using your WordPress Installed Plugins screen. Click o
 This method is safer than using any other source for the files.
 
 == Changelog == 
+
+= 0.1.0 = 
+* Feature Changes    
+    * None 
+* Technical Information
+    * Database table schema changes including table rename
+* Known Issues
+    * None
+
 = 0.0.11 = 
 * Feature Changes    
-    * This update takes us closer to building the scope of a new portal with the submissio of a single form.
+    * This update takes us closer to building the scope of a new portal with the submission of a single form.
     * Can now enter # instead of a page ID to create the page - when making a new portal.
     * Can now create a menu when creating a new portal.
     * Pages are automatically assigned to selected or generated menu. 

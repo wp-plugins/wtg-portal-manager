@@ -190,15 +190,15 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
         $portal_description = __( 'No portal description could be found.', 'wtgportalmanager' );
         
         // get portal information
-        $active_portal_id = WTGPORTALMANAGER::get_active_portal_id();
-        if( is_numeric( $active_portal_id ) ) {
-            $portal_name = WTGPORTALMANAGER::get_portal_name( $active_portal_id );
+        $active_project_id = WTGPORTALMANAGER::get_active_project_id();
+        if( is_numeric( $active_project_id ) ) {
+            $portal_name = WTGPORTALMANAGER::get_portal_name( $active_project_id );
             if( empty( $portal_name ) || !$portal_name ) { 
                 $portal_name = __( 'Portal Name Unknown (data may have been deleted)', 'wtgportalmanager' );   
             }   
 
             // get portal description
-            $portal_description = WTGPORTALMANAGER::get_portal_description( $active_portal_id );                        
+            $portal_description = WTGPORTALMANAGER::get_portal_description( $active_project_id );                        
         }
 
         
@@ -210,7 +210,7 @@ class WTGPORTALMANAGER_UI extends WTGPORTALMANAGER {
 
                 <div class="welcome-panel-content">
 
-                    <h3>You are working on: ' . $portal_name . ' (' . $active_portal_id . ')</h3>
+                    <h3>You are working on: ' . $portal_name . ' (' . $active_project_id . ')</h3>
  
                     '. self::info_area( '', $portal_description ) .'
                     

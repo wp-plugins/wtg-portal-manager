@@ -44,7 +44,7 @@ class WTGPORTALMANAGER_Requests {
         $this->PHPBB = $this->WTGPORTALMANAGER->load_class( "WTGPORTALMANAGER_PHPBB", "class-phpbb.php", 'classes','pluginmenu' );   
           
         // set current active portal
-        if(!defined( "WTGPORTALMANAGER_ADMINCURRENT" ) ){define( "WTGPORTALMANAGER_ADMINCURRENT", $this->WTGPORTALMANAGER->get_active_portal_id() );}                
+        if(!defined( "WTGPORTALMANAGER_ADMINCURRENT" ) ){define( "WTGPORTALMANAGER_ADMINCURRENT", $this->WTGPORTALMANAGER->get_active_project_id() );}                
     }
     
     /**
@@ -473,20 +473,20 @@ class WTGPORTALMANAGER_Requests {
         $sidebar_id = false;
         
         if( $_POST['selectedmenu'] == 'createmenu' ) {
-            $menu_id = wp_create_nav_menu( $_POST['newportalname'] );
+            $menu_id = wp_create_nav_menu( $_POST['newprojectname'] );
         } else if( is_numeric( $_POST['selectedmenu'] ) ) {
             $menu_id = $_POST['selectedmenu'];    
         }
 
         // insert the portal
-        $new_portal_id = $this->WTGPORTALMANAGER->insertportal( $_POST['newportalname'], $_POST['newportaldescription'], $menu_id );  
+        $new_project_id = $this->WTGPORTALMANAGER->insertportal( $_POST['newprojectname'], $_POST['newportaldescription'], $menu_id );  
         
         if( isset( $_POST['newportalblogcategory'] ) ){
-            $this->WTGPORTALMANAGER->add_portal_meta( $new_portal_id, 'maincategory', $_POST['newportalblogcategory'], true );    
+            $this->WTGPORTALMANAGER->add_portal_meta( $new_project_id, 'maincategory', $_POST['newportalblogcategory'], true );    
         }
         
         if( isset( $opt['newportalforumid'] ) ){
-            $this->WTGPORTALMANAGER->add_portal_meta( $new_portal_id, 'primary_forum_id', $_POST['newportalforumid'], true );    
+            $this->WTGPORTALMANAGER->add_portal_meta( $new_project_id, 'primary_forum_id', $_POST['newportalforumid'], true );    
         }
                          
         ##########################################################
@@ -518,7 +518,7 @@ class WTGPORTALMANAGER_Requests {
             if( $_POST['newportal' . $page['programmingpurpose'] . 'page'] == '#' ) 
             { 
                 // create a new page (wp_insert_post() is used)
-                $page_id = $this->WTGPORTALMANAGER->create_portal_page( $new_portal_id, $_POST['newportalname'], $page, $_POST['applydefaultcontent0'], $home_page_id ); 
+                $page_id = $this->WTGPORTALMANAGER->create_portal_page( $new_project_id, $_POST['newprojectname'], $page, $_POST['applydefaultcontent0'], $home_page_id ); 
                 
                 if( $page['programmingpurpose'] == 'main' ) { 
                     $home_page_id = $page_id;
@@ -527,8 +527,8 @@ class WTGPORTALMANAGER_Requests {
             else 
             { 
                 $page_id = $_POST['newportal' . $page['programmingpurpose'] . 'page'];
-                $this->WTGPORTALMANAGER->add_portal_meta( $new_portal_id, 'page', $page_id, true );   
-                $this->WTGPORTALMANAGER->update_page_purpose( $new_portal_id, $page_id, 'main' );
+                $this->WTGPORTALMANAGER->add_portal_meta( $new_project_id, 'page', $page_id, true );   
+                $this->WTGPORTALMANAGER->update_page_purpose( $new_project_id, $page_id, 'main' );
                 
                 if( $page['programmingpurpose'] == 'main' ) {
                     $home_page_id = $page_id; 
@@ -537,7 +537,7 @@ class WTGPORTALMANAGER_Requests {
             
             // create new sidebar or get submitted value
             if( $_POST['selectedsidebar'] == 'createsidebar' ) {
-                $sidebar_id = $this->WTGPORTALMANAGER->insert_sidebar( $_POST['newportalname'] );
+                $sidebar_id = $this->WTGPORTALMANAGER->insert_sidebar( $_POST['newprojectname'] );
             } else { 
                 $sidebar_id = $_POST['selectedsidebar'];# validation is done by class-forms.php ensuring this is a numeric value
             }
@@ -577,9 +577,9 @@ class WTGPORTALMANAGER_Requests {
         }
                 
         // set the new portal to active (applies to current user only)
-        $this->WTGPORTALMANAGER->activate_portal( get_current_user_id(), $new_portal_id );
+        $this->WTGPORTALMANAGER->activate_portal( get_current_user_id(), $new_project_id );
         
-        $this->UI->create_notice( __( "The new portal ID is $new_portal_id and you can begin working on the portal now.", 'wtgportalmanager' ), 'success', 'Small', __( 'Portal Created', 'wtgportalmanager' ) );                                              
+        $this->UI->create_notice( __( "The new portal ID is $new_project_id and you can begin working on the portal now.", 'wtgportalmanager' ), 'success', 'Small', __( 'Portal Created', 'wtgportalmanager' ) );                                              
     }
     
     /**
@@ -605,9 +605,9 @@ class WTGPORTALMANAGER_Requests {
     * @version 1.0
     */
     public function addpagerelationship() {
-        $portal_id = $this->WTGPORTALMANAGER->get_active_portal_id();
-        $this->WTGPORTALMANAGER->create_page_relationship( $portal_id, $_POST['addpageid'] );
-        $this->WTGPORTALMANAGER->update_page_purpose( $portal_id, $_POST['addpageid'], $_POST['pagepurpose'] );
+        $project_id = $this->WTGPORTALMANAGER->get_active_project_id();
+        $this->WTGPORTALMANAGER->create_page_relationship( $project_id, $_POST['addpageid'] );
+        $this->WTGPORTALMANAGER->update_page_purpose( $project_id, $_POST['addpageid'], $_POST['pagepurpose'] );
         $this->UI->create_notice( __( "A new page has been added to your current active portal.", 'wtgportalmanager' ), 'success', 'Small', __( 'Page Relationship Created', 'wtgportalmanager' ) );                                                       
     }
 
@@ -633,7 +633,7 @@ class WTGPORTALMANAGER_Requests {
     * @version 1.0
     */
     public function maincategory() {
-        $this->WTGPORTALMANAGER->update_main_category( $this->WTGPORTALMANAGER->get_active_portal_id(), $_POST['selectedcategory'] );
+        $this->WTGPORTALMANAGER->update_main_category( $this->WTGPORTALMANAGER->get_active_project_id(), $_POST['selectedcategory'] );
         $this->UI->create_notice( __( "The main category allows your portal to have a blog and the selected category will be focused on.", 'wtgportalmanager' ), 'success', 'Small', __( 'Main Category Set', 'wtgportalmanager' ) );
     }
                                                                                                                                                                                                    
@@ -659,7 +659,7 @@ class WTGPORTALMANAGER_Requests {
     * @version 1.0
     */
     public function addcategories() {
-        $this->WTGPORTALMANAGER->add_portal_subcategory( $this->WTGPORTALMANAGER->get_active_portal_id(), $_POST['selectedsubcategory'] );
+        $this->WTGPORTALMANAGER->add_portal_subcategory( $this->WTGPORTALMANAGER->get_active_project_id(), $_POST['selectedsubcategory'] );
         $this->UI->create_notice( __( "The new category is now available within your portal.", 'wtgportalmanager' ), 'success', 'Small', __( 'Category Added', 'wtgportalmanager' ) );
     }
 
@@ -725,7 +725,7 @@ class WTGPORTALMANAGER_Requests {
             $selected_sidebar_id = $_POST[ $themes_dynamic_sidebars['metakey'] ];
             
             // set new portal -> sidebar relationship which adds post meta_key used in sidebar.php to the portal meta_key 
-            $this->WTGPORTALMANAGER->set_sidebar_relationship( $this->WTGPORTALMANAGER->get_active_portal_id(), $themes_dynamic_sidebars['metakey'], $selected_sidebar_id );    
+            $this->WTGPORTALMANAGER->set_sidebar_relationship( $this->WTGPORTALMANAGER->get_active_project_id(), $themes_dynamic_sidebars['metakey'], $selected_sidebar_id );    
             
             // add post meta to all posts that do not have it but do have a relationship with the current portal
             // get post ID's by querying post, page, maincategory, subcategory meta_keys in portal table

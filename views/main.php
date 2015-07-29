@@ -828,7 +828,7 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
 
             <table class="form-table">
             <?php        
-            $this->Forms->text_advanced( $box['args']['formid'], 'newportalname', 'newportalname', __( 'Portal Name', 'wtgportalmanager' ), '', false, true, true, false, false, array( 'alphanumeric' ) );      
+            $this->Forms->text_advanced( $box['args']['formid'], 'newprojectname', 'newprojectname', __( 'Portal Name', 'wtgportalmanager' ), '', false, true, true, false, false, array( 'alphanumeric' ) );      
             $this->Forms->textarea_basic( $box['args']['formid'], 'newportaldescription', 'newportaldescription', __( 'Portal Description', 'wtgportalmanager' ), '', true, 5, 20, array( 'alphanumeric' ) );
             $this->Forms->text_basic( $box['args']['formid'], 'newportalblogcategory', 'newportalblogcategory', __( 'Blog Category ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );       
             $this->Forms->text_basic( $box['args']['formid'], 'newportalforumid', 'newportalforumid', __( 'Forum ID', 'wtgportalmanager' ), '', false, 5, 20, array( 'numeric' ) );
@@ -906,7 +906,7 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
             <?php 
             $portals = $this->WTGPORTALMANAGER->get_portals();
             foreach( $portals as $key => $port ) {
-                $this->UI->option_subline( '', $port['portalname'] );
+                $this->UI->option_subline( '', $port['projectname'] );
             }       
             ?>
             </table> 
@@ -978,11 +978,11 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
     */
     public function postbox_main_currentportal( $data, $box ) { 
         // get users currently active portal
-        $active_portal_id = get_user_meta( get_current_user_id(), 'wtgportalmanager_activeportal', true );
+        $active_project_id = get_user_meta( get_current_user_id(), 'wtgportalmanager_activeportal', true );
         
         // construct postbox header message
-        if( !$active_portal_id ) {
-            $message =  __( 'Portal with ID ' . $active_portal_id . ' is currently active. You can activate another portal using this form if you do not wish to edit the current portal.', '' );
+        if( !$active_project_id ) {
+            $message =  __( 'Portal with ID ' . $active_project_id . ' is currently active. You can activate another portal using this form if you do not wish to edit the current portal.', '' );
         } else {
             $message =  __( 'You have not activated a portal for edited or have not created any portals yet. Use this form to active a portal for edited once your first portal has been created.', '' );
         }
@@ -1000,7 +1000,7 @@ class WTGPORTALMANAGER_Main_View extends WTGPORTALMANAGER_View {
             // build portal array - portal ID as key
             $portals_array = array();
             foreach( $portals as $key => $port ) {
-                $portals_array[ $port['portal_id'] ] = $port['portalname'];    
+                $portals_array[ $port['project_id'] ] = $port['projectname'];    
             }
             
             $this->Forms->menu_basic( $box['args']['formid'], 'portalactivation', 'portalactivation', __( 'Select Portal', 'wtgportalmanager' ), $portals_array, true, '' );

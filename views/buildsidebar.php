@@ -207,7 +207,7 @@ class WTGPORTALMANAGER_Buildsidebar_View extends WTGPORTALMANAGER_View {
                     $sidebar_position_id = $themes_dynamic_sidebars['sidebarid'];
                     
                     // pass sidebar position ID (in sidebar.php) and portal ID to get the ID of the custom sidebar assigned to the sidebar position    
-                    $saved_sidebar_id = $this->WTGPORTALMANAGER->get_dynamicsidebar_id( $this->WTGPORTALMANAGER->get_active_portal_id(), $sidebar_position_id );
+                    $saved_sidebar_id = $this->WTGPORTALMANAGER->get_dynamicsidebar_id( $this->WTGPORTALMANAGER->get_active_project_id(), $sidebar_position_id );
                 
                     // a menu per sidebar - the post meta_key used to store sidebar ID is this menus ID
                     // the post meta_key becomes portal meta_key also, this is used to add the post meta if a portal post does not have it yet

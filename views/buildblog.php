@@ -142,7 +142,7 @@ class WTGPORTALMANAGER_Buildblog_View extends WTGPORTALMANAGER_View {
         $this->UI->postbox_content_header( $box['title'], $box['args']['formid'], __( 'Select the main blog category for your portal - usually the category offering official posts only, unique content and higher priority information than posts in other possible categories.', 'wtgportalmanager' ), false );        
         $this->Forms->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );                                 
         
-        $current_category_id = $this->WTGPORTALMANAGER->get_portal_maincategory_id( $this->WTGPORTALMANAGER->get_active_portal_id() );
+        $current_category_id = $this->WTGPORTALMANAGER->get_portal_maincategory_id( $this->WTGPORTALMANAGER->get_active_project_id() );
         
         if( !is_numeric( $current_category_id ) ) {
             $current_category_id = 0;// WP default category    
@@ -235,7 +235,7 @@ class WTGPORTALMANAGER_Buildblog_View extends WTGPORTALMANAGER_View {
         $this->Forms->form_start( $box['args']['formid'], $box['args']['formid'], $box['title'] );                                 
         
         // get subcategories
-        $subcategories_array = $this->WTGPORTALMANAGER->get_portal_subcategories( $this->WTGPORTALMANAGER->get_active_portal_id() );
+        $subcategories_array = $this->WTGPORTALMANAGER->get_portal_subcategories( $this->WTGPORTALMANAGER->get_active_project_id() );
         
         echo 'Just a basic list of ID but it will be improved with a table.';
         

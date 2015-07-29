@@ -175,7 +175,7 @@ class WTGPORTALMANAGER_Buildpages_View extends WTGPORTALMANAGER_View {
             
             <table class="form-table">                  
             <?php 
-            $page_array = $this->WTGPORTALMANAGER->get_portal_pages( $this->WTGPORTALMANAGER->get_active_portal_id() );
+            $page_array = $this->WTGPORTALMANAGER->get_portal_pages( $this->WTGPORTALMANAGER->get_active_project_id() );
             if( !$page_array ) {
                 _e( 'You have not linked any pages to your current portal.', 'wtgportalmanager');    
             } else {
